@@ -25,6 +25,7 @@ type apiFunc func(c *gin.Context) (int, error)
 func MakeHTTPHandleFunc(f apiFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if statusCode, err := f(c); err != nil {
+			c.Header("Content-Type", "application/json")
 			c.JSON(statusCode, ApiError{Error: err.Error()})
 		}
 	}
