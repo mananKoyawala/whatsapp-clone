@@ -27,7 +27,7 @@ func NewDatabase() (*Database, error) {
 	port := os.Getenv("DB_PORT")
 	dbname := os.Getenv("DB_NAME")
 	sslmode := os.Getenv("DB_SSLMODE")
-
+	log.Printf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s", username, password, host, port, dbname, sslmode)
 	connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s", username, password, host, port, dbname, sslmode)
 
 	db, err := sql.Open("postgres", connStr)
@@ -36,7 +36,8 @@ func NewDatabase() (*Database, error) {
 	}
 
 	if err = db.Ping(); err != nil {
-		return nil, errors.New("ping error")
+		return nil, err
+		// + errors.New("ping error")
 	}
 
 	return &Database{db: db}, nil
