@@ -32,7 +32,7 @@ func NewWsHandler(h *Hub) *Handler {
 
 func (h *Handler) WsConnector(c *gin.Context) {
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, _ := strconv.Atoi(c.Param("uid"))
 	userId := int64(id)
 
 	// TODO : check if the client exits in the system do it in the middleware

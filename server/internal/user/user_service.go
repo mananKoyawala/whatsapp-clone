@@ -17,23 +17,24 @@ type service struct {
 }
 
 func NewUserService(repository Repository) Service {
-	return &service{Repository: repository, timeout: time.Duration(2) * time.Second}
+	return &service{Repository: repository, timeout: time.Duration(100) * time.Second}
 }
 
 func (s *service) CreateUser(ctx context.Context, user *CreateUserReq) (*CreateUserRes, error) {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 	logs(11)
+	current_time, _ := helper.GetTime()
 	u := &User{
 		Name:          user.Name,
 		Mobile:        user.Mobile,
 		About:         user.About,
 		Image:         user.Image,
-		Created_at:    time.Now(),
-		Updated_at:    time.Now(),
+		Created_at:    current_time,
+		Updated_at:    current_time,
 		Token:         "",
 		Refresh_Token: "",
-		Last_Seen:     time.Now(),
+		Last_Seen:     current_time,
 		Is_Online:     false,
 	}
 	logs(12)
