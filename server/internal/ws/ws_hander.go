@@ -50,8 +50,6 @@ func (h *Handler) WsConnector(c *gin.Context) {
 		break
 	}
 
-	log.Println("client id -> ", userId)
-
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err.Error())
@@ -72,5 +70,4 @@ func (h *Handler) WsConnector(c *gin.Context) {
 
 	go client.readMessage(h.hub, h.mr)
 	go client.writeMessage()
-
 }

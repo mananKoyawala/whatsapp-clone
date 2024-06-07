@@ -39,8 +39,7 @@ func (h *Hub) Run() {
 			}
 		case message := <-h.WriteMessages:
 			for client := range h.clients {
-				// receiverID := strconv.Itoa(int(message.ReceiverID))
-				// send only message when connected client and sender client's requested receiver id is samw
+				// send only message when connected client and sender client's requested receiver id is same
 				if message.ReceiverID == client.ID {
 					select {
 					case client.Message <- message:

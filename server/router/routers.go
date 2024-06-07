@@ -25,12 +25,11 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	r.GET("/ws/connect/:uid", wshandler.WsConnector) // * for websocket connection mothod must be GET
 
 	// msg routes
-	// r.POST("/msg", api.MakeHTTPHandleFunc(msgHandler.AddMessage))
 	r.POST("/msgs", api.MakeHTTPHandleFunc(msgHandler.PullAllMessages))
 	r.PATCH("/msgs", api.MakeHTTPHandleFunc(msgHandler.UpdateIsReadMessage))
 	r.DELETE("/msgs", api.MakeHTTPHandleFunc(msgHandler.DeleteMessage))
 }
 
 func RunServer(listenAddr string) error {
-	return r.Run(listenAddr)
+	return r.RunTLS(listenAddr, "../server.crt", "../server.key")
 }
