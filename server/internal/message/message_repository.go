@@ -56,3 +56,18 @@ func (r *repository) PullAllMessages(ctx context.Context, req *GetAllMessageReq)
 
 	return &messages, nil
 }
+
+// here i taked receiver and sender id for more security beause anyone can update with only message id
+func (r *repository) UpdateIsReadMessage(ctx context.Context, req *ReadMessage) error {
+
+	query := `
+	UPDATE messages 
+	SET is_read=true 
+	WHERE id=$1 AND sender_id=$2 AND receiver_id=$3`
+
+	if err := r.db.QueryRowContext(ctx, query, req.ID, req.SenderID, req.ReceiverID); err.Err() != nil {
+		return err.Err()
+	}
+
+	return nil
+}

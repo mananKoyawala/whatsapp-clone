@@ -45,3 +45,19 @@ func (h *Handler) PullAllMessages(c *gin.Context) (int, error) {
 
 	return api.WriteData(c, http.StatusOK, res)
 }
+
+func (h *Handler) UpdateIsReadMessage(c *gin.Context) (int, error) {
+	var req struct {
+		Message []ReadMessage `json:"msg"`
+	}
+
+	if err := c.BindJSON(&req); err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	if err := h.Service.UpdateIsReadMessage(c.Request.Context(), &req.Message); err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return api.WriteMessage(c, http.StatusOK, "all the messages are read updated")
+}

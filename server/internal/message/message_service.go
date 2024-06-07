@@ -99,3 +99,14 @@ func (s *service) PullAllMessages(ctx context.Context, req *GetAllMessageReq) (*
 
 	return res, nil
 }
+
+func (s *service) UpdateIsReadMessage(ctx context.Context, req *[]ReadMessage) error {
+
+	for _, msg := range *req {
+		if err := s.Repository.UpdateIsReadMessage(ctx, &msg); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
