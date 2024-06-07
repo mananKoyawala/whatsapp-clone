@@ -22,11 +22,13 @@ var upgrader = websocket.Upgrader{
 
 type Handler struct {
 	hub *Hub
+	mr  msg.Repository
 }
 
-func NewWsHandler(h *Hub) *Handler {
+func NewWsHandler(h *Hub, mr msg.Repository) *Handler {
 	return &Handler{
 		hub: h,
+		mr:  mr,
 	}
 }
 
@@ -68,7 +70,7 @@ func (h *Handler) WsConnector(c *gin.Context) {
 	// register client
 	h.hub.Register <- client
 
-	go client.readMessage(h.hub)
+	go client.readMessage(h.hub, h.mr)
 	go client.writeMessage()
 
 }

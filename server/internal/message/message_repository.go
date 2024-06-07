@@ -3,7 +3,6 @@ package msg
 import (
 	"context"
 	"database/sql"
-	"log"
 )
 
 type repository struct {
@@ -29,13 +28,15 @@ func (r *repository) AddMessage(ctx context.Context, msg Message) (*Message, err
 }
 
 func (r *repository) PullAllMessages(ctx context.Context, req *GetAllMessageReq) (*[]Message, error) {
-	log.Println(req.FromDate, req.ToDate)
+
 	query := `
 	SELECT * 
 	FROM messages 
 	WHERE (sender_id=$1 AND receiver_id=$2) OR (sender_id=$2 AND receiver_id=$1) 
+	OR (sender_id != $1 AND sender_id != $2)
 	AND created_at BETWEEN $3 AND $4
 	ORDER BY created_at`
+	// OR (sender_id != $1 AND sender_id != $2) it acts as a filter so it is not going to find the messages like 1-1
 	rows, err := r.db.QueryContext(ctx, query, req.SenderID, req.ReceiverID, req.FromDate, req.ToDate)
 	if err != nil {
 		return nil, err

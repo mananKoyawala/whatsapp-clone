@@ -30,7 +30,7 @@ func main() {
 
 	// ws initalization
 	hub := ws.NewHub()
-	wsHandler := ws.NewWsHandler(hub)
+	wsHandler := ws.NewWsHandler(hub, msgRepo)
 
 	//run the hub
 	go hub.Run()

@@ -23,7 +23,7 @@ func NewUserService(repository Repository) Service {
 func (s *service) CreateUser(ctx context.Context, user *CreateUserReq) (*CreateUserRes, error) {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
-	logs(11)
+	// logs(11)
 	current_time, _ := helper.GetTime()
 	u := &User{
 		Name:          user.Name,
@@ -37,13 +37,13 @@ func (s *service) CreateUser(ctx context.Context, user *CreateUserReq) (*CreateU
 		Last_Seen:     current_time,
 		Is_Online:     false,
 	}
-	logs(12)
+	// logs(12)
 
 	r, err := s.Repository.CreateUser(ctx, u)
 	if err != nil {
 		return nil, err
 	}
-	logs(13)
+	// logs(13)
 
 	res := &CreateUserRes{
 		ID:     int64(r.ID),
@@ -52,7 +52,7 @@ func (s *service) CreateUser(ctx context.Context, user *CreateUserReq) (*CreateU
 		About:  r.About,
 		Image:  r.Image,
 	}
-	logs(14)
+	// logs(14)
 
 	return res, nil
 }

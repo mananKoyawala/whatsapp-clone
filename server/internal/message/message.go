@@ -3,6 +3,8 @@ package msg
 import (
 	"context"
 	"time"
+
+	helper "github.com/mananKoyawala/whatsapp-clone/helpers"
 )
 
 type Message struct {
@@ -48,6 +50,20 @@ type ReadMessage struct {
 	ID         int64 `json:"id"`
 	SenderID   int64 `json:"sender_id"`
 	ReceiverID int64 `json:"receiver_id"`
+}
+
+func NewMessage(msg *Message) *Message {
+	currentTime, _ := helper.GetTime()
+	return &Message{
+		SenderID:    msg.SenderID,
+		ReceiverID:  msg.ReceiverID,
+		MessageType: msg.MessageType,
+		MessageText: msg.MessageText,
+		MediaUrl:    msg.MediaUrl,
+		IsRead:      false,
+		Created_at:  currentTime,
+		Updated_at:  currentTime,
+	}
 }
 
 type Repository interface {

@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -14,7 +15,7 @@ type Client struct {
 	ID      int64 `json:"id"`
 }
 
-func (c *Client) readMessage(hub *Hub) {
+func (c *Client) readMessage(hub *Hub, mr msg.Repository) {
 	defer func() {
 		hub.Unregister <- c
 		c.conn.Close()
@@ -30,21 +31,24 @@ func (c *Client) readMessage(hub *Hub) {
 			break
 		}
 
-		log.Println(string(message))
-
-		var msg *msg.Message
+		var nmsg *msg.Message
 
 		// unmarshal the message form the client
-		if err := json.Unmarshal(message, &msg); err != nil {
+		if err := json.Unmarshal(message, &nmsg); err != nil {
 			log.Println(err.Error())
 			break
 		}
 
-		// TODO : add message to database
+		newMessage := msg.NewMessage(nmsg)
+		resmessage, err := mr.AddMessage(context.Background(), *newMessage)
+		if err != nil {
+			log.Println(err.Error())
+		} // TODO : we need to make sure that both sender and receiver must be exists
+		nmsg.ID = resmessage.ID
 
-		// sendign the message if client and sender client id is same
-		if msg.SenderID == c.ID {
-			hub.WriteMessages <- msg
+		// sending the message if client and sender client id is same
+		if nmsg.SenderID == c.ID {
+			hub.WriteMessages <- nmsg
 		}
 
 	}

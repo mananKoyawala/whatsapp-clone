@@ -25,7 +25,7 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	r.GET("/ws/connect/:uid", wshandler.WsConnector) // * for websocket connection mothod must be GET
 
 	// msg routes
-	r.POST("/msg", api.MakeHTTPHandleFunc(msgHandler.AddMessage))
+	// r.POST("/msg", api.MakeHTTPHandleFunc(msgHandler.AddMessage))
 	r.POST("/msgs", api.MakeHTTPHandleFunc(msgHandler.PullAllMessages))
 	r.PATCH("/msgs", api.MakeHTTPHandleFunc(msgHandler.UpdateIsReadMessage))
 }
