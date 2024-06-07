@@ -100,12 +100,27 @@ func (s *service) PullAllMessages(ctx context.Context, req *GetAllMessageReq) (*
 	return res, nil
 }
 
-func (s *service) UpdateIsReadMessage(ctx context.Context, req *[]ReadMessage) error {
+func (s *service) UpdateIsReadMessage(ctx context.Context, req *[]MessageReq) error {
 
 	for _, msg := range *req {
 		if err := s.Repository.UpdateIsReadMessage(ctx, &msg); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (s *service) DeleteMessage(ctx context.Context, msg *MessageReq) error {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	if err := s.Repository.IsMsgExist(ctx, msg); err != nil {
+		return err
+	}
+
+	if err := s.Repository.DeleteMessage(ctx, msg); err != nil {
+		return err
 	}
 
 	return nil

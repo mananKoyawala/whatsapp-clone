@@ -28,6 +28,7 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	// r.POST("/msg", api.MakeHTTPHandleFunc(msgHandler.AddMessage))
 	r.POST("/msgs", api.MakeHTTPHandleFunc(msgHandler.PullAllMessages))
 	r.PATCH("/msgs", api.MakeHTTPHandleFunc(msgHandler.UpdateIsReadMessage))
+	r.DELETE("/msgs", api.MakeHTTPHandleFunc(msgHandler.DeleteMessage))
 }
 
 func RunServer(listenAddr string) error {

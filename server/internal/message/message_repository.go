@@ -3,6 +3,7 @@ package msg
 import (
 	"context"
 	"database/sql"
+	"errors"
 )
 
 type repository struct {
@@ -59,7 +60,7 @@ func (r *repository) PullAllMessages(ctx context.Context, req *GetAllMessageReq)
 }
 
 // here i taked receiver and sender id for more security beause anyone can update with only message id
-func (r *repository) UpdateIsReadMessage(ctx context.Context, req *ReadMessage) error {
+func (r *repository) UpdateIsReadMessage(ctx context.Context, req *MessageReq) error {
 
 	query := `
 	UPDATE messages 
@@ -68,6 +69,36 @@ func (r *repository) UpdateIsReadMessage(ctx context.Context, req *ReadMessage) 
 
 	if err := r.db.QueryRowContext(ctx, query, req.ID, req.SenderID, req.ReceiverID); err.Err() != nil {
 		return err.Err()
+	}
+
+	return nil
+}
+
+func (r *repository) DeleteMessage(ctx context.Context, msg *MessageReq) error {
+	query := `
+	DELETE FROM messages 
+	WHERE id=$1 AND sender_id=$2 AND receiver_id=$3
+	`
+
+	if err := r.db.QueryRowContext(ctx, query, msg.ID, msg.SenderID, msg.ReceiverID); err.Err() != nil {
+		return err.Err()
+	}
+
+	return nil
+}
+
+func (r *repository) IsMsgExist(ctx context.Context, msg *MessageReq) error {
+	query := "SELECT * FROM messages WHERE id=$1 AND sender_id=$2 AND receiver_id=$3"
+
+	row, err := r.db.QueryContext(ctx, query, msg.ID, msg.SenderID, msg.ReceiverID)
+	if err != nil {
+		return err
+	}
+	defer row.Close()
+
+	hasData := row.Next()
+	if !hasData {
+		return errors.New("message don't exitst")
 	}
 
 	return nil

@@ -46,7 +46,7 @@ type GetAllMessageReq struct {
 	ToDate     string `json:"to_date"`
 }
 
-type ReadMessage struct {
+type MessageReq struct {
 	ID         int64 `json:"id"`
 	SenderID   int64 `json:"sender_id"`
 	ReceiverID int64 `json:"receiver_id"`
@@ -69,11 +69,14 @@ func NewMessage(msg *Message) *Message {
 type Repository interface {
 	AddMessage(ctx context.Context, msg Message) (*Message, error)
 	PullAllMessages(ctx context.Context, req *GetAllMessageReq) (*[]Message, error)
-	UpdateIsReadMessage(ctx context.Context, req *ReadMessage) error
+	UpdateIsReadMessage(ctx context.Context, req *MessageReq) error
+	DeleteMessage(ctx context.Context, msg *MessageReq) error
+	IsMsgExist(ctx context.Context, msg *MessageReq) error
 }
 
 type Service interface {
 	AddMessage(ctx context.Context, msg *CreateMesReq) (*CreateMesRes, error)
 	PullAllMessages(ctx context.Context, req *GetAllMessageReq) (*[]Message, error)
-	UpdateIsReadMessage(ctx context.Context, req *[]ReadMessage) error
+	UpdateIsReadMessage(ctx context.Context, req *[]MessageReq) error
+	DeleteMessage(ctx context.Context, msg *MessageReq) error
 }

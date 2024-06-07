@@ -48,7 +48,7 @@ func (h *Handler) PullAllMessages(c *gin.Context) (int, error) {
 
 func (h *Handler) UpdateIsReadMessage(c *gin.Context) (int, error) {
 	var req struct {
-		Message []ReadMessage `json:"msg"`
+		Message []MessageReq `json:"msg"`
 	}
 
 	if err := c.BindJSON(&req); err != nil {
@@ -60,4 +60,17 @@ func (h *Handler) UpdateIsReadMessage(c *gin.Context) (int, error) {
 	}
 
 	return api.WriteMessage(c, http.StatusOK, "all the messages are read updated")
+}
+
+func (h *Handler) DeleteMessage(c *gin.Context) (int, error) {
+	var res MessageReq
+	if err := c.BindJSON(&res); err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	if err := h.Service.DeleteMessage(c.Request.Context(), &res); err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return api.WriteMessage(c, http.StatusOK, "message deleted")
 }
