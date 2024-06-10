@@ -6,11 +6,12 @@ import (
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 	user "github.com/mananKoyawala/whatsapp-clone/internal/user"
 	"github.com/mananKoyawala/whatsapp-clone/internal/ws"
+	"github.com/mananKoyawala/whatsapp-clone/service/upload"
 )
 
 var r *gin.Engine
 
-func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Handler) {
+func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Handler, uploadHandler *upload.AwsHandler) {
 	r = gin.Default()
 
 	// health checking
@@ -28,6 +29,9 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	r.POST("/msgs", api.MakeHTTPHandleFunc(msgHandler.PullAllMessages))
 	r.PATCH("/msgs", api.MakeHTTPHandleFunc(msgHandler.UpdateIsReadMessage))
 	r.DELETE("/msgs", api.MakeHTTPHandleFunc(msgHandler.DeleteMessage))
+
+	// upload file
+	r.POST("/upload", api.MakeHTTPHandleFunc(uploadHandler.UploaFile))
 }
 
 func RunServer(listenAddr string) error {

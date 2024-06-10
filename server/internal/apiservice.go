@@ -31,6 +31,11 @@ func MakeHTTPHandleFunc(f apiFunc) gin.HandlerFunc {
 	}
 }
 
+func WriteError(c *gin.Context, status int, v any) (int, error) {
+	c.JSON(status, gin.H{"error": v})
+	return 0, nil
+}
+
 func WriteMessage(c *gin.Context, status int, v string) (int, error) {
 	c.JSON(status, ApiMessage{Message: v})
 	return 0, nil
