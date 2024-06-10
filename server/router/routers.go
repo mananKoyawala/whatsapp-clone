@@ -30,8 +30,9 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	r.PATCH("/msgs", api.MakeHTTPHandleFunc(msgHandler.UpdateIsReadMessage))
 	r.DELETE("/msgs", api.MakeHTTPHandleFunc(msgHandler.DeleteMessage))
 
-	// upload file
+	// file routes
 	r.POST("/upload", api.MakeHTTPHandleFunc(uploadHandler.UploaFile))
+	r.DELETE("/delete", api.MakeHTTPHandleFunc(uploadHandler.DeleteFile))
 }
 
 func RunServer(listenAddr string) error {

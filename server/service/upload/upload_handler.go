@@ -3,6 +3,7 @@ package upload
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	api "github.com/mananKoyawala/whatsapp-clone/internal"
@@ -40,4 +41,21 @@ func (h *AwsHandler) UploaFile(c *gin.Context) (int, error) {
 	}
 
 	return api.WriteData(c, http.StatusOK, res)
+}
+
+func (h *AwsHandler) DeleteFile(c *gin.Context) (int, error) {
+
+	url := c.Request.FormValue("url")
+
+	// extract the name of the image
+	parts := strings.Split(url, "/")
+	imageName := parts[len(parts)-1]
+
+	err := h.AwsService.deleteFile(imageName)
+
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return api.WriteMessage(c, http.StatusOK, "file delelted")
 }

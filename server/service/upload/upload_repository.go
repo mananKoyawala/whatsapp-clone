@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
@@ -101,4 +102,25 @@ func (a *AwsService) saveFile(fileReader io.Reader, fileHeader *multipart.FileHe
 	// get the uploaded file URL
 	url := fmt.Sprintf("https://%s.s3.amazonaws.com/%s", a.bucketName, fileHeader.Filename)
 	return url, nil
+}
+
+func (a *AwsService) deleteFile(etag string) error {
+
+	// is file exists or not
+	_, err := uploder.S3.GetObject(&s3.GetObjectInput{
+		Bucket: &a.bucketName,
+		Key:    &etag,
+	})
+
+	if err != nil {
+		return errors.New("file doesn't exits")
+	}
+
+	// deleting the file by key (key -> it's name with extension)
+	_, err = uploder.S3.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: &a.bucketName,
+		Key:    &etag,
+	})
+
+	return err
 }
