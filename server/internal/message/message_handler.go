@@ -23,6 +23,11 @@ func (h *Handler) AddMessage(c *gin.Context) (int, error) {
 		return http.StatusBadRequest, err
 	}
 
+	msg, ok := validateMessage(msgReq)
+	if !ok {
+		return api.WriteMessage(c, http.StatusBadRequest, msg)
+	}
+
 	res, err := h.Service.AddMessage(c.Request.Context(), &msgReq)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -73,4 +78,41 @@ func (h *Handler) DeleteMessage(c *gin.Context) (int, error) {
 	}
 
 	return api.WriteMessage(c, http.StatusOK, "message deleted")
+}
+
+func validateMessage(req CreateMesReq) (string, bool) {
+	var str string
+
+	// * if message_type="text" then message_text != ""
+	// * if message_type="media" then media_url != ""
+
+	if req.SenderID <= 0 {
+		str += " / sender_id required / "
+	}
+
+	if req.ReceiverID <= 0 {
+		str += " / receiver_id required / "
+	}
+
+	if !(req.MessageType == "text" || req.MessageType == "media") {
+		str += " / message_type must be text or media / "
+	}
+
+	if req.MessageType == "text" {
+		if req.MessageText == "" {
+			str += " / message_text required / "
+		}
+	}
+
+	if req.MessageType == "media" {
+		if req.MediaUrl == "" {
+			str += " / media_url required / "
+		}
+	}
+
+	if str != "" {
+		return str, false
+	}
+
+	return "", true
 }

@@ -34,13 +34,17 @@ func (h *AwsHandler) UploaFile(c *gin.Context) (int, error) {
 		return http.StatusBadRequest, errors.New("only one file is allowed")
 	}
 
+	if ok := allowedExtension(files[0].Filename); !ok {
+		return http.StatusBadRequest, errors.New(" / .jpeg .jpg .png and .pdf files are allowed / ")
+	}
+
 	res, err := h.AwsService.UploaFile(files)
 
 	if err != nil {
 		return api.WriteError(c, http.StatusInternalServerError, res)
 	}
 
-	return api.WriteData(c, http.StatusOK, res)
+	return api.WriteData(c, http.StatusOK, "res")
 }
 
 func (h *AwsHandler) DeleteFile(c *gin.Context) (int, error) {
@@ -58,4 +62,17 @@ func (h *AwsHandler) DeleteFile(c *gin.Context) (int, error) {
 	}
 
 	return api.WriteMessage(c, http.StatusOK, "file delelted")
+}
+
+func allowedExtension(filename string) bool {
+	extension := strings.Split(filename, ".")[len(strings.Split(filename, "."))-1]
+
+	allowedExtensions := map[string]bool{
+		"jpg":  true,
+		"jpeg": true,
+		"png":  true,
+		"pdf":  true,
+	}
+
+	return allowedExtensions[extension]
 }

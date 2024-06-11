@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	helper "github.com/mananKoyawala/whatsapp-clone/helpers"
 	api "github.com/mananKoyawala/whatsapp-clone/internal"
 )
 
@@ -24,6 +25,11 @@ func (h *Handler) CreateUser(c *gin.Context) (int, error) {
 		return http.StatusBadRequest, err
 	}
 
+	str, ok := validateCreateUser(userReq)
+	if !ok {
+		return api.WriteMessage(c, http.StatusBadRequest, str)
+	}
+
 	res, err := h.Service.CreateUser(c.Request.Context(), &userReq)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -36,6 +42,10 @@ func (h *Handler) LoginUser(c *gin.Context) (int, error) {
 	var userReq UserLoginReq
 	if err := c.BindJSON(&userReq); err != nil {
 		return http.StatusBadRequest, err
+	}
+
+	if helper.CheckLength(int(userReq.Mobile), 10) {
+		return api.WriteMessage(c, http.StatusBadRequest, " / mobile number must be 10 digit / ")
 	}
 
 	res, err := h.Service.Login(c.Request.Context(), &userReq)
@@ -65,4 +75,30 @@ func (h *Handler) VerifyUserOTP(c *gin.Context) (int, error) {
 	}
 
 	return api.WriteData(c, http.StatusOK, res)
+}
+
+func validateCreateUser(req CreateUserReq) (string, bool) {
+	var str string
+
+	if req.Name == "" {
+		str += " / name required / "
+	}
+
+	if helper.CheckLength(int(req.Mobile), 10) {
+		str += " / mobile number must be 10 digit / "
+	}
+
+	if req.About == "" {
+		str += " / about required / "
+	}
+
+	if req.Image == "" {
+		str += " / image required / "
+	}
+
+	if str != "" {
+		return str, false
+	}
+
+	return "", true
 }
