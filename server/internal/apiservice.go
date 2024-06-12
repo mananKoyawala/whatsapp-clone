@@ -1,8 +1,12 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 )
+
+var Unauthorized error = errors.New("permisson denied")
 
 type ApiError struct { // to return error
 	Error string `json:"error"`

@@ -14,13 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-// const (
-// 	region     = "ap-south-1"
-// 	accessKey  = "AKIA5PARVWEFTXOUKFSQ"
-// 	secretKey  = "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"
-// 	bucketName = "aws-bucket-media-storage"
-// )
-
 var uploder *s3manager.Uploader
 
 type AwsService struct {

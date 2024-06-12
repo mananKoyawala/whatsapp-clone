@@ -39,10 +39,19 @@ func (h *Handler) AddMessage(c *gin.Context) (int, error) {
 // if from and to date are not provided then it takes first date of month as from_date and current date as to_date
 func (h *Handler) PullAllMessages(c *gin.Context) (int, error) {
 	var req GetAllMessageReq
+
+	// validating json
 	if err := c.BindJSON(&req); err != nil {
 		return http.StatusBadRequest, err
 	}
 
+	// check wheather user can access resourse or not
+	/* it prevents from situation like where hacker knows two or more peopels id and token and want to manuplating data but he can't manuplate data of x user using y's token */
+	if ok := checkRequestUserAuthenticated(c, req.SenderID); !ok {
+		return http.StatusUnauthorized, api.Unauthorized
+	}
+
+	// pull all messages
 	res, err := h.Service.PullAllMessages(c.Request.Context(), &req)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -68,12 +77,17 @@ func (h *Handler) UpdateIsReadMessage(c *gin.Context) (int, error) {
 }
 
 func (h *Handler) DeleteMessage(c *gin.Context) (int, error) {
-	var res MessageReq
-	if err := c.BindJSON(&res); err != nil {
+	var req MessageReq
+	if err := c.BindJSON(&req); err != nil {
 		return http.StatusBadRequest, err
 	}
 
-	if err := h.Service.DeleteMessage(c.Request.Context(), &res); err != nil {
+	// check wheather user can access resourse or not
+	if ok := checkRequestUserAuthenticated(c, req.SenderID); !ok {
+		return http.StatusUnauthorized, api.Unauthorized
+	}
+
+	if err := h.Service.DeleteMessage(c.Request.Context(), &req); err != nil {
 		return http.StatusInternalServerError, err
 	}
 
@@ -115,4 +129,13 @@ func validateMessage(req CreateMesReq) (string, bool) {
 	}
 
 	return "", true
+}
+
+func checkRequestUserAuthenticated(c *gin.Context, senderId int64) bool {
+	reqUserId, ok := c.Get("id")
+	if !ok {
+		return false
+	}
+
+	return reqUserId == senderId
 }

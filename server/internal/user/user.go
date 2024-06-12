@@ -85,6 +85,7 @@ type Service interface {
 	CreateUser(ctx context.Context, user *CreateUserReq) (*CreateUserRes, error)
 	Login(ctx context.Context, req *UserLoginReq) (*UserLoginRes, error)
 	VerifyOTP(ctx context.Context, otp *OTPVerificationReq) (*OTPVerificationRes, error)
+	GetUserById(ctx context.Context, id int64) (*User, error)
 }
 
 func logs(i int) {

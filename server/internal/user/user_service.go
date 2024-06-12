@@ -141,3 +141,10 @@ func (s *service) VerifyOTP(ctx context.Context, o *OTPVerificationReq) (*OTPVer
 
 	return res, nil
 }
+
+func (s *service) GetUserById(ctx context.Context, id int64) (*User, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	return s.Repository.GetUserById(ctx, id)
+}

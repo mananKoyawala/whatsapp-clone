@@ -6,6 +6,7 @@ import (
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 	user "github.com/mananKoyawala/whatsapp-clone/internal/user"
 	"github.com/mananKoyawala/whatsapp-clone/internal/ws"
+	"github.com/mananKoyawala/whatsapp-clone/middleware"
 	"github.com/mananKoyawala/whatsapp-clone/service/upload"
 )
 
@@ -21,6 +22,9 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	r.POST("/users/signup", api.MakeHTTPHandleFunc(user.CreateUser))
 	r.POST("/users/login", api.MakeHTTPHandleFunc(user.LoginUser))
 	r.POST("/users/verify", api.MakeHTTPHandleFunc(user.VerifyUserOTP))
+
+	// middleware
+	r.Use(middleware.AuthMiddleware(user))
 
 	// ws routes
 	r.GET("/ws/connect/:uid", wshandler.WsConnector) // * for websocket connection mothod must be GET
