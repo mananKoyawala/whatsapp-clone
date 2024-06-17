@@ -57,14 +57,16 @@ func (c *Client) readMessage(hub *Hub, mr msg.Repository) {
 
 		newMessage := msg.NewMessage(nmsg)
 		resmessage, err := mr.AddMessage(context.Background(), *newMessage)
-		if err != nil {
-			log.Println(err.Error())
-		} // TODO : we need to make sure that both sender and receiver must be exists
-		nmsg.ID = resmessage.ID
+		if err == nil {
+			// if both sender and receiver exist
+			nmsg.ID = resmessage.ID
 
-		// sending the message if client and sender client id is same
-		if nmsg.SenderID == c.ID {
-			hub.WriteMessages <- nmsg
+			// sending the message if client and sender client id is same
+			if nmsg.SenderID == c.ID {
+				hub.WriteMessages <- nmsg
+			}
+		} else {
+			log.Println(err.Error())
 		}
 
 	}

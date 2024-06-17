@@ -40,7 +40,7 @@ func (h *Hub) Run() {
 		case message := <-h.WriteMessages:
 			for client := range h.clients {
 				// send only message when connected client and sender client's requested receiver id is same
-				if message.ReceiverID == client.ID {
+				if message.ReceiverID == client.ID || message.SenderID == client.ID {
 					select {
 					case client.Message <- message:
 					default:

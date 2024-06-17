@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	api "github.com/mananKoyawala/whatsapp-clone/internal"
+	"github.com/mananKoyawala/whatsapp-clone/internal/contact"
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 	user "github.com/mananKoyawala/whatsapp-clone/internal/user"
 	"github.com/mananKoyawala/whatsapp-clone/internal/ws"
@@ -12,7 +13,7 @@ import (
 
 var r *gin.Engine
 
-func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Handler, uploadHandler *upload.AwsHandler) {
+func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Handler, uploadHandler *upload.AwsHandler, contact *contact.Handler) {
 	r = gin.Default()
 
 	// health checking
@@ -37,6 +38,10 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	// file routes
 	r.POST("/upload", api.MakeHTTPHandleFunc(uploadHandler.UploaFile))
 	r.DELETE("/delete", api.MakeHTTPHandleFunc(uploadHandler.DeleteFile))
+
+	// contact routes
+	r.POST("/contacts", api.MakeHTTPHandleFunc(contact.AddContact))
+
 }
 
 func RunServer(listenAddr string) error {

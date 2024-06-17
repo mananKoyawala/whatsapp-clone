@@ -6,6 +6,7 @@ import (
 
 	"github.com/joho/godotenv"
 	db "github.com/mananKoyawala/whatsapp-clone/database"
+	"github.com/mananKoyawala/whatsapp-clone/internal/contact"
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 	"github.com/mananKoyawala/whatsapp-clone/internal/user"
 	"github.com/mananKoyawala/whatsapp-clone/internal/ws"
@@ -50,9 +51,14 @@ func main() {
 	uploadSev.InitializeAwsSerive(region, accessKey, secretKey)
 	uploadHan := upload.NewAwsHandler(*uploadSev)
 
+	// contact initialization
+	conRepo := contact.NewContactRepo(db.GetDB())
+	conSev := contact.NewContactServ(conRepo, userRepository)
+	conHand := contact.NewContactHan(conSev)
+
 	//run the hub
 	go hub.Run()
 
-	router.SetupRouters(userHandler, wsHandler, msgHand, &uploadHan)
+	router.SetupRouters(userHandler, wsHandler, msgHand, &uploadHan, &conHand)
 	log.Fatal(router.RunServer("localhost:8080"))
 }

@@ -75,6 +75,7 @@ type Repository interface {
 	CreateUser(ctx context.Context, user *User) (*User, error)
 	GetUserByMobile(ctx context.Context, mobile int64) (string, error)
 	GetUserById(ctx context.Context, id int64) (*User, error)
+	GetUserByMobileInt64(ctx context.Context, mobile int64) (int64, error)
 	AddUserOTP(ctx context.Context, otp *UserOTP) error
 	VerifyOTP(ctx context.Context, otp *UserOTP) (int64, error)
 	UpdateTokens(ctx context.Context, token string, refresh_token string, updated_at time.Time, id int64) (int64, error)

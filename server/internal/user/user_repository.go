@@ -41,6 +41,15 @@ func (r *repository) GetUserByMobile(ctx context.Context, mobile int64) (string,
 	return strconv.Itoa(userId), nil
 }
 
+func (r *repository) GetUserByMobileInt64(ctx context.Context, mobile int64) (int64, error) {
+	var userId int
+	query := "SELECT id FROM users WHERE mobile = $1"
+	if err := r.db.QueryRowContext(ctx, query, mobile).Scan(&userId); err != nil {
+		return 0, err
+	}
+	return int64(userId), nil
+}
+
 func (r *repository) GetUserById(ctx context.Context, id int64) (*User, error) {
 	var user User
 	query := "SELECT * FROM users WHERE id = $1"
