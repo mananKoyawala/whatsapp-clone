@@ -3,6 +3,9 @@ package contact
 import (
 	"context"
 	"database/sql"
+	"fmt"
+
+	"github.com/mananKoyawala/whatsapp-clone/internal/user"
 )
 
 type repository struct {
@@ -41,4 +44,31 @@ func (r *repository) ContactAlreadyExist(ctx context.Context, uid, cid int64) bo
 
 	r.db.QueryRowContext(ctx, query, uid, cid).Scan(&id)
 	return id > 0
+}
+
+func (r *repository) GetContacts(ctx context.Context, id int64) (*[]user.UserContactsRes, error) {
+	query := `
+	SELECT u.id,u.name,u.mobile,u.about,u.image,u.last_seen,u.is_online
+	FROM users u
+	INNER JOIN contacts c ON u.id = c.cid
+	WHERE c.uid=$1;
+	`
+
+	row, err := r.db.QueryContext(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer row.Close()
+
+	var users []user.UserContactsRes
+	for row.Next() {
+		var user user.UserContactsRes
+		if err := row.Scan(&user.ID, &user.Name, &user.Mobile, &user.About, &user.Image, &user.Last_Seen, &user.Is_Online); err != nil {
+			fmt.Println("Error scanning row:", err)
+			continue
+		}
+		users = append(users, user)
+	}
+
+	return &users, nil
 }

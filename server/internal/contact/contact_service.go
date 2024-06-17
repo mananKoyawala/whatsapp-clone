@@ -45,3 +45,10 @@ func (s *service) AddContact(ctx context.Context, req *CreateContactReq) (*Conta
 
 	return res, nil
 }
+
+func (s *service) GetContacts(ctx context.Context, id int64) (*[]user.UserContactsRes, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	return s.Repository.GetContacts(ctx, id)
+}

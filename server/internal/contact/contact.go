@@ -1,6 +1,10 @@
 package contact
 
-import "context"
+import (
+	"context"
+
+	"github.com/mananKoyawala/whatsapp-clone/internal/user"
+)
 
 type Contact struct {
 	ID  int64 `json:"id"`
@@ -24,8 +28,10 @@ type CreateContactReq struct {
 type Repository interface {
 	AddContact(ctx context.Context, uid, cid int64) (*Contact, error)
 	ContactAlreadyExist(ctx context.Context, uid, cid int64) bool
+	GetContacts(ctx context.Context, id int64) (*[]user.UserContactsRes, error)
 }
 
 type Service interface {
 	AddContact(ctx context.Context, req *CreateContactReq) (*Contact, error)
+	GetContacts(ctx context.Context, id int64) (*[]user.UserContactsRes, error)
 }

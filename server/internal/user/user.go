@@ -70,6 +70,16 @@ type OTPVerificationRes struct {
 	Refresh_Token string    `json:"refresh_token"`
 }
 
+type UserContactsRes struct {
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Mobile    int64     `json:"mobile"`
+	About     string    `json:"about"`
+	Image     string    `json:"image"`
+	Last_Seen time.Time `json:"last_seen"`
+	Is_Online bool      `json:"is_online"`
+}
+
 // deals with database
 type Repository interface {
 	CreateUser(ctx context.Context, user *User) (*User, error)

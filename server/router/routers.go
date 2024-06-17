@@ -41,6 +41,7 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 
 	// contact routes
 	r.POST("/contacts", api.MakeHTTPHandleFunc(contact.AddContact))
+	r.GET("/contacts/:id", api.MakeHTTPHandleFunc(contact.GetContacts))
 
 }
 
