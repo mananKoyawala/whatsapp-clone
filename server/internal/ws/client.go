@@ -20,6 +20,7 @@ type Client struct {
 	conn    *websocket.Conn
 	Message chan *msg.Message
 	ID      int64 `json:"id"`
+	GroupID int64 `json:"group_id"`
 }
 
 func (c *Client) readMessage(hub *Hub, mr msg.Repository) {

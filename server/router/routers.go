@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	api "github.com/mananKoyawala/whatsapp-clone/internal"
 	"github.com/mananKoyawala/whatsapp-clone/internal/contact"
+	"github.com/mananKoyawala/whatsapp-clone/internal/group"
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 	user "github.com/mananKoyawala/whatsapp-clone/internal/user"
 	"github.com/mananKoyawala/whatsapp-clone/internal/ws"
@@ -13,7 +14,7 @@ import (
 
 var r *gin.Engine
 
-func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Handler, uploadHandler *upload.AwsHandler, contact *contact.Handler) {
+func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Handler, uploadHandler *upload.AwsHandler, contact *contact.Handler, groupHand *group.Handler) {
 	r = gin.Default()
 
 	// health checking
@@ -42,6 +43,10 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	// contact routes
 	r.POST("/contacts", api.MakeHTTPHandleFunc(contact.AddContact))
 	r.GET("/contacts/:id", api.MakeHTTPHandleFunc(contact.GetContacts))
+
+	// group routes
+	r.POST("/groups", api.MakeHTTPHandleFunc(groupHand.CreateGroup))
+	r.POST("/groups/addmember", api.MakeHTTPHandleFunc(groupHand.AddMemberToGroup))
 
 }
 

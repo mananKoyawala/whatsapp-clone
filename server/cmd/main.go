@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	db "github.com/mananKoyawala/whatsapp-clone/database"
 	"github.com/mananKoyawala/whatsapp-clone/internal/contact"
+	"github.com/mananKoyawala/whatsapp-clone/internal/group"
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 	"github.com/mananKoyawala/whatsapp-clone/internal/user"
 	"github.com/mananKoyawala/whatsapp-clone/internal/ws"
@@ -56,9 +57,14 @@ func main() {
 	conSev := contact.NewContactServ(conRepo, userRepository)
 	conHand := contact.NewContactHan(conSev)
 
+	// group initialization
+	groupRepo := group.NewGroupRepository(db.GetDB())
+	groupSev := group.NewGroupService(groupRepo)
+	groupHand := group.NewGroupHandler(groupSev)
+
 	//run the hub
 	go hub.Run()
 
-	router.SetupRouters(userHandler, wsHandler, msgHand, &uploadHan, &conHand)
+	router.SetupRouters(userHandler, wsHandler, msgHand, &uploadHan, &conHand, &groupHand)
 	log.Fatal(router.RunServer("localhost:8080"))
 }
