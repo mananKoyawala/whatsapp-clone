@@ -47,6 +47,7 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	// group routes
 	r.POST("/groups", api.MakeHTTPHandleFunc(groupHand.CreateGroup))
 	r.POST("/groups/addmember", api.MakeHTTPHandleFunc(groupHand.AddMemberToGroup))
+	r.GET("/groups/:uid", api.MakeHTTPHandleFunc(groupHand.GetAllGroupByUserID))
 
 }
 

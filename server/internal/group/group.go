@@ -51,9 +51,11 @@ type Repositroy interface {
 	GetGroupByID(ctx context.Context, groupId int64) (*Group, error)
 	GetMemberByGroupID(ctx context.Context, groupId int64) ([]int64, error)
 	CheckUserAlreadyInTheGroup(ctx context.Context, GroupId, UserId int64) bool
+	GetAllGroupByUserID(ctx context.Context, userId int64) ([]int64, error)
 }
 
 type Service interface {
 	CreateGroup(ctx context.Context, group *Group) (*Group, error)
 	AddMemberToGroup(ctx context.Context, req *AddMemberReq) error
+	GetAllGroupByUserID(ctx context.Context, userId int64) (*[]Group, error)
 }

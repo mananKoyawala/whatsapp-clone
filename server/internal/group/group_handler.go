@@ -1,7 +1,9 @@
 package group
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	api "github.com/mananKoyawala/whatsapp-clone/internal"
@@ -45,4 +47,18 @@ func (h *Handler) AddMemberToGroup(c *gin.Context) (int, error) {
 	}
 
 	return api.WriteMessage(c, http.StatusOK, "members added into the group")
+}
+
+func (h *Handler) GetAllGroupByUserID(c *gin.Context) (int, error) {
+	id, err := strconv.Atoi(c.Param("uid"))
+	if err != nil || id <= 0 {
+		return http.StatusBadRequest, errors.New("invalid id")
+	}
+
+	groups, err := h.Service.GetAllGroupByUserID(c.Request.Context(), int64(id))
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return api.WriteData(c, http.StatusOK, groups)
 }

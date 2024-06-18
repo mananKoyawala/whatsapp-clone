@@ -3,6 +3,7 @@ package group
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 )
 
@@ -47,4 +48,25 @@ func (s *service) AddMemberToGroup(ctx context.Context, req *AddMemberReq) error
 	}
 
 	return s.Repositroy.AddMemberToGroup(ctx, req.GroupID, req.Members)
+}
+
+func (s *service) GetAllGroupByUserID(ctx context.Context, userId int64) (*[]Group, error) {
+	var groups []Group
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	groupIds, err := s.Repositroy.GetAllGroupByUserID(ctx, userId)
+	if err != nil {
+		return nil, nil
+	}
+
+	for _, id := range groupIds {
+		group, err := s.Repositroy.GetGroupByID(ctx, id)
+		if err != nil {
+			log.Printf("error while getting group info %d", id)
+		}
+		groups = append(groups, *group)
+	}
+
+	return &groups, nil
 }

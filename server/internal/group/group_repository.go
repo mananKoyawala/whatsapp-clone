@@ -91,7 +91,6 @@ func (r *repository) GetMemberByGroupID(ctx context.Context, groupId int64) ([]i
 		Id int64 `json:"u_id"`
 	}
 
-	log.Println(">>>", groupId)
 	query := `
 	SELECT u_id FROM group_members WHERE g_id=$1
 	`
@@ -111,7 +110,7 @@ func (r *repository) GetMemberByGroupID(ctx context.Context, groupId int64) ([]i
 		}
 		members = append(members, id.Id)
 	}
-	log.Println(members)
+
 	return members, nil
 }
 
@@ -128,3 +127,30 @@ func (r *repository) CheckUserAlreadyInTheGroup(ctx context.Context, GroupId, Us
 }
 
 // Get all the group in which user in it
+func (r *repository) GetAllGroupByUserID(ctx context.Context, userId int64) ([]int64, error) {
+	type ID struct {
+		Id int64 `json:"g_id"`
+	}
+
+	query := `
+	SELECT g_id FROM group_members WHERE u_id=$1
+	`
+
+	var groups []int64
+
+	row, err := r.db.QueryContext(ctx, query, userId)
+	if err != nil {
+		return groups, err
+	}
+
+	for row.Next() {
+		var id ID
+		if err := row.Scan(&id.Id); err != nil {
+			log.Printf("error occurs while scanning gid %d", id)
+			continue
+		}
+		groups = append(groups, id.Id)
+	}
+	log.Println(groups)
+	return groups, nil
+}
