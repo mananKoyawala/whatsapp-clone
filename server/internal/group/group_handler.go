@@ -2,6 +2,7 @@ package group
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -99,4 +100,14 @@ func (h *Handler) UpdateGroupDetails(c *gin.Context) (int, error) {
 	}
 
 	return api.WriteData(c, http.StatusOK, res)
+}
+
+func (h *Handler) DeleteGroupByID(c *gin.Context) (int, error) {
+	groupId, _ := strconv.Atoi(c.Param("gid"))
+
+	if err := h.Service.DeleteGroupByID(c.Request.Context(), int64(groupId)); err != nil {
+		return http.StatusInternalServerError, err
+	}
+	msg := fmt.Sprintf("group deleted with id %d", groupId)
+	return api.WriteMessage(c, http.StatusOK, msg)
 }

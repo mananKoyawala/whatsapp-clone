@@ -62,6 +62,7 @@ type Repositroy interface {
 	GetAllGroupByUserID(ctx context.Context, userId int64) ([]int64, error)
 	RemoveMemberFromGroup(ctx context.Context, groupId, userId int64) error
 	UpdateGroupDetails(ctx context.Context, group Group) (*Group, error)
+	DeleteGroupByID(ctx context.Context, groupID int64) error
 }
 
 type Service interface {
@@ -71,4 +72,5 @@ type Service interface {
 	RemoveMemberFromGroup(ctx context.Context, groupId, userId int64) error
 	UpdateGroupDetails(ctx context.Context, req UpdateGroup) (*Group, error)
 	GetGroupDetailsByID(ctx context.Context, groupID int64) (*Group, error)
+	DeleteGroupByID(ctx context.Context, groupID int64) error
 }

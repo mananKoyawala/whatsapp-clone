@@ -104,3 +104,10 @@ func (s *service) UpdateGroupDetails(ctx context.Context, req UpdateGroup) (*Gro
 
 	return group, nil
 }
+
+func (s *service) DeleteGroupByID(ctx context.Context, groupID int64) error {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	return s.Repositroy.DeleteGroupByID(ctx, groupID)
+}

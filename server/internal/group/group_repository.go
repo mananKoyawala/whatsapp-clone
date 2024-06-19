@@ -28,12 +28,14 @@ func (r *repository) CreateGroup(ctx context.Context, group *Group) (*Group, err
 	}
 
 	// adding initial members
+	current_time, _ := helper.GetTime()
+
 	query2 := `
-	INSERT INTO group_members (group_id,member_id) VALUES ($1,$2) RETURNING id
+	INSERT INTO group_members (g_id,u_id,created_at,updated_at) VALUES ($1,$2,$3,$4) RETURNING id
 	`
 	// adding the members into the group
-	for member := range group.Members {
-		if err := r.db.QueryRowContext(ctx, query2, group.ID, member); err != nil {
+	for _, member := range group.Members {
+		if err := r.db.QueryRowContext(ctx, query2, group.ID, member, current_time, current_time); err.Err() != nil {
 			log.Printf("error occured while adding member id %d", member)
 			continue
 		}
@@ -51,7 +53,6 @@ func (r *repository) AddMemberToGroup(ctx context.Context, groupid int64, member
 	`
 
 	// adding the members into the group
-	// log.Println(groupid)
 	for _, member := range members {
 
 		// checking user already added or not
@@ -193,6 +194,58 @@ func (r *repository) UpdateGroupDetails(ctx context.Context, group Group) (*Grou
 	return &group, nil
 }
 
-// TODO : delete group then remove all the people also from group_members
+// delete group then remove all the people also from group_members
+func (r *repository) DeleteGroupByID(ctx context.Context, groupID int64) error {
+
+	// begin transaction
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	query := `
+	DELETE FROM groups WHERE id=$1
+	`
+
+	// check group already exist or not
+	_, err = r.GetGroupByID(ctx, groupID)
+	if err != nil {
+		tx.Rollback()
+		log.Println(err.Error())
+		return errors.New("group doesn't exist")
+	}
+
+	//  delete first all the members related the group
+	queryDeleteAllMembers := `
+	DELETE FROM group_members 
+	WHERE g_id=$1
+	`
+
+	// delete all group members
+	_, err = r.db.ExecContext(ctx, queryDeleteAllMembers, groupID)
+	if err != nil {
+		tx.Rollback()
+		log.Println(err.Error())
+		return err
+	}
+
+	// delete group
+	_, err = r.db.ExecContext(ctx, query, groupID)
+	if err != nil {
+		tx.Rollback()
+		log.Println(err.Error())
+		return err
+	}
+
+	// commit transaction
+	err = tx.Commit()
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println("....Transaction committed")
+	}
+
+	return nil
+}
 
 // TODO : if admin leaves then make admin as after just added user (make common func for all who want to leave)

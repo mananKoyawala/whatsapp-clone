@@ -50,6 +50,7 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	r.GET("/groups/user/:uid", api.MakeHTTPHandleFunc(groupHand.GetAllGroupByUserID))
 	r.GET("/groups/:gid", api.MakeHTTPHandleFunc(groupHand.GetGroupDetailsByID))
 	r.DELETE("/groups/:gid/:uid", api.MakeHTTPHandleFunc(groupHand.RemoveMemberFromGroup))
+	r.DELETE("/groups/:gid", api.MakeHTTPHandleFunc(groupHand.DeleteGroupByID))
 	r.PUT("/groups", api.MakeHTTPHandleFunc(groupHand.UpdateGroupDetails))
 
 }
