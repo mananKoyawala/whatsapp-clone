@@ -51,11 +51,11 @@ func (r *repository) AddMemberToGroup(ctx context.Context, groupid int64, member
 	`
 
 	// adding the members into the group
-	log.Println(groupid)
+	// log.Println(groupid)
 	for _, member := range members {
 
 		// checking user already added or not
-		if ok := r.CheckUserAlreadyInTheGroup(ctx, groupid, member); !ok {
+		if ok := r.CheckUserAlreadyInTheGroup(ctx, groupid, member); ok {
 
 			if err := r.db.QueryRowContext(ctx, query, groupid, member, current_time, current_time); err.Err() != nil {
 
@@ -115,15 +115,17 @@ func (r *repository) GetMemberByGroupID(ctx context.Context, groupId int64) ([]i
 }
 
 func (r *repository) CheckUserAlreadyInTheGroup(ctx context.Context, GroupId, UserId int64) bool {
+	var id int64
 	query := `
-	SELECT * FROM group_members WHERE g_id=$1 AND u_id=$2
+	SELECT id FROM group_members WHERE g_id=$1 AND u_id=$2
 	`
 
-	if err := r.db.QueryRowContext(ctx, query, GroupId, UserId); err.Err() != nil {
-		return false
+	err := r.db.QueryRowContext(ctx, query, GroupId, UserId).Scan(&id)
+	if err != nil || id <= 0 {
+		return true
 	}
 
-	return true
+	return false
 }
 
 // Get all the group in which user in it
@@ -151,6 +153,46 @@ func (r *repository) GetAllGroupByUserID(ctx context.Context, userId int64) ([]i
 		}
 		groups = append(groups, id.Id)
 	}
-	log.Println(groups)
+	// log.Println(groups)
 	return groups, nil
 }
+
+// remove member from group (slightly same as add to group) only admin can do this
+func (r *repository) RemoveMemberFromGroup(ctx context.Context, groupId, userId int64) error {
+
+	query := `
+	DELETE FROM group_members WHERE g_id=$1 AND u_id=$2
+	`
+
+	if ok := r.CheckUserAlreadyInTheGroup(ctx, groupId, userId); ok {
+		return errors.New("user doesn't belongs to the group")
+	}
+
+	_, err := r.db.ExecContext(ctx, query, groupId, userId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// update group details
+func (r *repository) UpdateGroupDetails(ctx context.Context, group Group) (*Group, error) {
+
+	group.Updated_at, _ = helper.GetTime()
+	query := `
+	UPDATE groups 
+	SET admin_id=$1 , name=$2 , about=$3, image=$4 , updated_at=$5
+	WHERE id=$6 
+	`
+
+	if err := r.db.QueryRowContext(ctx, query, group.AdminID, group.Name, group.About, group.Image, group.Updated_at, group.ID); err.Err() != nil {
+		return nil, err.Err()
+	}
+
+	return &group, nil
+}
+
+// TODO : delete group then remove all the people also from group_members
+
+// TODO : if admin leaves then make admin as after just added user (make common func for all who want to leave)

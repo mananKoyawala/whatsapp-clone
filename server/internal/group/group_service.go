@@ -70,3 +70,37 @@ func (s *service) GetAllGroupByUserID(ctx context.Context, userId int64) (*[]Gro
 
 	return &groups, nil
 }
+
+func (s *service) RemoveMemberFromGroup(ctx context.Context, groupId, userId int64) error {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	return s.Repositroy.RemoveMemberFromGroup(ctx, groupId, userId)
+}
+
+func (s *service) GetGroupDetailsByID(ctx context.Context, groupID int64) (*Group, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	return s.Repositroy.GetGroupByID(ctx, groupID)
+}
+
+func (s *service) UpdateGroupDetails(ctx context.Context, req UpdateGroup) (*Group, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	g := Group{
+		ID:      req.ID,
+		AdminID: req.AdminID,
+		Name:    req.Name,
+		About:   req.About,
+		Image:   req.Image,
+	}
+
+	group, err := s.Repositroy.UpdateGroupDetails(ctx, g)
+	if err != nil {
+		return nil, err
+	}
+
+	return group, nil
+}

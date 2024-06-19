@@ -45,6 +45,14 @@ type AddMemberReq struct {
 	Members []int64 `json:"members"`
 }
 
+type UpdateGroup struct {
+	ID      int64  `json:"id"`
+	AdminID int64  `json:"admin_id"`
+	Name    string `json:"name"`
+	About   string `json:"about"`
+	Image   string `json:"image"`
+}
+
 type Repositroy interface {
 	CreateGroup(ctx context.Context, group *Group) (*Group, error)
 	AddMemberToGroup(ctx context.Context, groupid int64, members []int64) error
@@ -52,10 +60,15 @@ type Repositroy interface {
 	GetMemberByGroupID(ctx context.Context, groupId int64) ([]int64, error)
 	CheckUserAlreadyInTheGroup(ctx context.Context, GroupId, UserId int64) bool
 	GetAllGroupByUserID(ctx context.Context, userId int64) ([]int64, error)
+	RemoveMemberFromGroup(ctx context.Context, groupId, userId int64) error
+	UpdateGroupDetails(ctx context.Context, group Group) (*Group, error)
 }
 
 type Service interface {
 	CreateGroup(ctx context.Context, group *Group) (*Group, error)
 	AddMemberToGroup(ctx context.Context, req *AddMemberReq) error
 	GetAllGroupByUserID(ctx context.Context, userId int64) (*[]Group, error)
+	RemoveMemberFromGroup(ctx context.Context, groupId, userId int64) error
+	UpdateGroupDetails(ctx context.Context, req UpdateGroup) (*Group, error)
+	GetGroupDetailsByID(ctx context.Context, groupID int64) (*Group, error)
 }
