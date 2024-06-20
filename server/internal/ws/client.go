@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/mananKoyawala/whatsapp-clone/internal/group"
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 )
 
@@ -17,13 +18,14 @@ var (
 )
 
 type Client struct {
-	conn    *websocket.Conn
-	Message chan *msg.Message
-	ID      int64 `json:"id"`
-	GroupID int64 `json:"group_id"`
+	conn         *websocket.Conn
+	Message      chan *msg.Message
+	GroupMessage chan *msg.Message
+	ID           int64 `json:"id"`
+	GroupID      int64 `json:"group_id"`
 }
 
-func (c *Client) readMessage(hub *Hub, mr msg.Repository) {
+func (c *Client) readMessage(hub *Hub, mr msg.Repository, gr group.Repositroy) {
 	defer func() {
 		hub.Unregister <- c
 		c.conn.Close()
@@ -56,20 +58,59 @@ func (c *Client) readMessage(hub *Hub, mr msg.Repository) {
 			break
 		}
 
-		newMessage := msg.NewMessage(nmsg)
+		// hub.WriteMessages <- newMessage
+		// get all the group members based on the group id and send them
+
+		newMessage := msg.NewMessage(nmsg) // get new message
+
+		// check message is type of group
+		if newMessage.IsGroupMessage {
+			// group message
+			sendGroupMessage(newMessage, hub, mr, gr)
+		} else {
+			// one-one message
+			sendOneOneMessage(*nmsg, newMessage, c, hub, mr)
+		}
+
+	}
+}
+
+func sendOneOneMessage(nmsg msg.Message, newMessage *msg.Message, c *Client, hub *Hub, mr msg.Repository) {
+	newMessage.GroupID = 0 // it's make easy when we retrive the messages based on group id , it's prevent from getting other messages
+	resmessage, err := mr.AddMessage(context.Background(), *newMessage)
+	if err == nil {
+		// if both sender and receiver exist
+		newMessage.ID = resmessage.ID
+		// sending the message if client and sender client id is same
+		if nmsg.SenderID == c.ID {
+			hub.WriteMessages <- newMessage
+		}
+	} else {
+		log.Println(err.Error())
+	}
+}
+
+func sendGroupMessage(newMessage *msg.Message, hub *Hub, mr msg.Repository, gr group.Repositroy) {
+	_, err := gr.GetGroupByID(context.Background(), newMessage.GroupID)
+	if err == nil {
+		newMessage.ReceiverID = newMessage.SenderID // only groups chat has receiver id = senderid
 		resmessage, err := mr.AddMessage(context.Background(), *newMessage)
 		if err == nil {
-			// if both sender and receiver exist
-			nmsg.ID = resmessage.ID
+			newMessage.ID = resmessage.ID
 
-			// sending the message if client and sender client id is same
-			if nmsg.SenderID == c.ID {
-				hub.WriteMessages <- nmsg
+			// get all the group memebers
+			members, err := gr.GetMemberByGroupID(context.Background(), newMessage.GroupID)
+			if err != nil {
+				log.Printf("error occurs while getting the members of group %d", newMessage.GroupID)
 			}
+			// var msg msg.GroupMessage
+			newMessage.Members = members
+
+			// send message to group members
+			hub.WriteGroupMessages <- newMessage
 		} else {
 			log.Println(err.Error())
 		}
-
 	}
 }
 
@@ -96,7 +137,6 @@ func (c *Client) writeMessage() {
 			}
 		}
 	}
-
 }
 
 func (c *Client) pongHandler(pongMsg string) error {

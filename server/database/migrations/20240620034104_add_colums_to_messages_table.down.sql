@@ -1,0 +1,3 @@
+ALTER TABLE messages
+DROP COLUMN IF EXISTS group_id,
+DROP COLUMN IF EXISTS is_group_msg;

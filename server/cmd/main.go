@@ -43,9 +43,14 @@ func main() {
 	msgSev := msg.NewMsgService(msgRepo, userRepository)
 	msgHand := msg.NewMsgHandler(msgSev)
 
+	// group initialization
+	groupRepo := group.NewGroupRepository(db.GetDB())
+	groupSev := group.NewGroupService(groupRepo)
+	groupHand := group.NewGroupHandler(groupSev)
+
 	// ws initialization
 	hub := ws.NewHub()
-	wsHandler := ws.NewWsHandler(hub, msgRepo)
+	wsHandler := ws.NewWsHandler(hub, msgRepo, groupRepo)
 
 	// file upload initialization
 	uploadSev := upload.NewAwsService(region, accessKey, secretKey, bucketName)
@@ -56,11 +61,6 @@ func main() {
 	conRepo := contact.NewContactRepo(db.GetDB())
 	conSev := contact.NewContactServ(conRepo, userRepository)
 	conHand := contact.NewContactHan(conSev)
-
-	// group initialization
-	groupRepo := group.NewGroupRepository(db.GetDB())
-	groupSev := group.NewGroupService(groupRepo)
-	groupHand := group.NewGroupHandler(groupSev)
 
 	//run the hub
 	go hub.Run()

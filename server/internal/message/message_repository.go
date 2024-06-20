@@ -17,9 +17,9 @@ func NewMsgReposritory(db *sql.DB) Repository {
 func (r *repository) AddMessage(ctx context.Context, msg Message) (*Message, error) {
 	var msgID int64
 
-	query := "INSERT INTO messages (sender_id,receiver_id,message_type,message_text,media_url,is_read,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id"
+	query := "INSERT INTO messages (sender_id,receiver_id,group_id,is_group_msg,message_type,message_text,media_url,is_read,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id"
 
-	if err := r.db.QueryRowContext(ctx, query, msg.SenderID, msg.ReceiverID, msg.MessageType, msg.MessageText, msg.MediaUrl, msg.IsRead, msg.Created_at, msg.Updated_at).Scan(&msgID); err != nil {
+	if err := r.db.QueryRowContext(ctx, query, msg.SenderID, msg.ReceiverID, msg.GroupID, msg.IsGroupMessage, msg.MessageType, msg.MessageText, msg.MediaUrl, msg.IsRead, msg.Created_at, msg.Updated_at).Scan(&msgID); err != nil {
 		return nil, err
 	}
 
