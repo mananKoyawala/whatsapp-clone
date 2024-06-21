@@ -36,6 +36,7 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	r.POST("/msgs/group", api.MakeHTTPHandleFunc(msgHandler.PullAllGroupMessages))
 	r.PATCH("/msgs", api.MakeHTTPHandleFunc(msgHandler.UpdateIsReadMessage))
 	r.DELETE("/msgs", api.MakeHTTPHandleFunc(msgHandler.DeleteMessage))
+	r.DELETE("/msgs/group", api.MakeHTTPHandleFunc(msgHandler.DeleteGroupMessage))
 
 	// file routes
 	r.POST("/upload", api.MakeHTTPHandleFunc(uploadHandler.UploaFile))

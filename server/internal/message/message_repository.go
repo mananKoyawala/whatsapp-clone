@@ -133,3 +133,16 @@ func (r *repository) PullAllGroupMessages(ctx context.Context, req *GetAllGroupM
 
 	return &messages, nil
 }
+
+func (r *repository) DeleteGroupMessage(ctx context.Context, msg *MessageGroupReq) error {
+	query := `
+	DELETE FROM messages 
+	WHERE id=$1 AND group_id=$2
+	`
+
+	if err := r.db.QueryRowContext(ctx, query, msg.ID, msg.GroupID); err.Err() != nil {
+		return err.Err()
+	}
+
+	return nil
+}

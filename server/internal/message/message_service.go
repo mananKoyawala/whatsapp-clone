@@ -155,3 +155,19 @@ func (s *service) PullAllGroupMessages(ctx context.Context, req *GetAllGroupMess
 
 	return res, nil
 }
+
+func (s *service) DeleteGroupMessage(ctx context.Context, msg *MessageGroupReq) error {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	_, err := s.groupRepo.GetGroupByID(ctx, msg.GroupID)
+	if err != nil {
+		return errors.New("group doesn't exist")
+	}
+
+	if err := s.Repository.DeleteGroupMessage(ctx, msg); err != nil {
+		return err
+	}
+
+	return nil
+}

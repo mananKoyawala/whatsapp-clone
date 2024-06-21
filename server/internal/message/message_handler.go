@@ -156,3 +156,16 @@ func (h *Handler) PullAllGroupMessages(c *gin.Context) (int, error) {
 
 	return api.WriteData(c, http.StatusOK, res)
 }
+
+func (h *Handler) DeleteGroupMessage(c *gin.Context) (int, error) {
+	var req MessageGroupReq
+	if err := c.BindJSON(&req); err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	if err := h.Service.DeleteGroupMessage(c.Request.Context(), &req); err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return api.WriteMessage(c, http.StatusOK, "message deleted")
+}

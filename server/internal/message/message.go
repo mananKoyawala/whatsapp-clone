@@ -61,6 +61,11 @@ type MessageReq struct {
 	ReceiverID int64 `json:"receiver_id"`
 }
 
+type MessageGroupReq struct {
+	ID      int64 `json:"id"`
+	GroupID int64 `json:"group_id"`
+}
+
 func NewMessage(msg *Message) *Message {
 	currentTime, _ := helper.GetTime()
 	return &Message{
@@ -84,6 +89,7 @@ type Repository interface {
 	PullAllGroupMessages(ctx context.Context, req *GetAllGroupMessageReq) (*[]Message, error)
 	UpdateIsReadMessage(ctx context.Context, req *MessageReq) error
 	DeleteMessage(ctx context.Context, msg *MessageReq) error
+	DeleteGroupMessage(ctx context.Context, msg *MessageGroupReq) error
 	IsMsgExist(ctx context.Context, msg *MessageReq) error
 }
 
@@ -92,5 +98,6 @@ type Service interface {
 	PullAllMessages(ctx context.Context, req *GetAllMessageReq) (*[]Message, error)
 	PullAllGroupMessages(ctx context.Context, req *GetAllGroupMessageReq) (*[]Message, error)
 	UpdateIsReadMessage(ctx context.Context, req *[]MessageReq) error
+	DeleteGroupMessage(ctx context.Context, msg *MessageGroupReq) error
 	DeleteMessage(ctx context.Context, msg *MessageReq) error
 }
