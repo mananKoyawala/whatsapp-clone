@@ -139,3 +139,20 @@ func checkRequestUserAuthenticated(c *gin.Context, senderId int64) bool {
 
 	return reqUserId == senderId
 }
+
+func (h *Handler) PullAllGroupMessages(c *gin.Context) (int, error) {
+	var req GetAllGroupMessageReq
+
+	// validating json
+	if err := c.BindJSON(&req); err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	// pull all messages
+	res, err := h.Service.PullAllGroupMessages(c.Request.Context(), &req)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return api.WriteData(c, http.StatusOK, res)
+}

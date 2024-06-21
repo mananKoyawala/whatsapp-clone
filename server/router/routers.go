@@ -33,6 +33,7 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 
 	// msg routes
 	r.POST("/msgs", api.MakeHTTPHandleFunc(msgHandler.PullAllMessages))
+	r.POST("/msgs/group", api.MakeHTTPHandleFunc(msgHandler.PullAllGroupMessages))
 	r.PATCH("/msgs", api.MakeHTTPHandleFunc(msgHandler.UpdateIsReadMessage))
 	r.DELETE("/msgs", api.MakeHTTPHandleFunc(msgHandler.DeleteMessage))
 

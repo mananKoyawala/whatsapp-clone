@@ -38,15 +38,16 @@ func main() {
 	userService := user.NewUserService(userRepository)
 	userHandler := user.NewUserHandler(userService)
 
-	// message
-	msgRepo := msg.NewMsgReposritory(db.GetDB())
-	msgSev := msg.NewMsgService(msgRepo, userRepository)
-	msgHand := msg.NewMsgHandler(msgSev)
-
 	// group initialization
 	groupRepo := group.NewGroupRepository(db.GetDB())
 	groupSev := group.NewGroupService(groupRepo)
 	groupHand := group.NewGroupHandler(groupSev)
+
+	// message
+	msgRepo := msg.NewMsgReposritory(db.GetDB())
+	msgSev := msg.NewMsgService(msgRepo, userRepository, groupRepo)
+	msgHand := msg.NewMsgHandler(msgSev)
+	
 
 	// ws initialization
 	hub := ws.NewHub()

@@ -53,7 +53,7 @@ type UpdateGroup struct {
 	Image   string `json:"image"`
 }
 
-type Repositroy interface {
+type Repository interface {
 	CreateGroup(ctx context.Context, group *Group) (*Group, error)
 	AddMemberToGroup(ctx context.Context, groupid int64, members []int64) error
 	GetGroupByID(ctx context.Context, groupId int64) (*Group, error)

@@ -8,19 +8,19 @@ import (
 )
 
 type service struct {
-	Repositroy
+	Repository
 	timeout time.Duration
 }
 
-func NewGroupService(r Repositroy) Service {
-	return &service{Repositroy: r, timeout: time.Duration(100) * time.Second}
+func NewGroupService(r Repository) Service {
+	return &service{Repository: r, timeout: time.Duration(100) * time.Second}
 }
 
 func (s *service) CreateGroup(ctx context.Context, group *Group) (*Group, error) {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	return s.Repositroy.CreateGroup(ctx, group)
+	return s.Repository.CreateGroup(ctx, group)
 }
 
 func (s *service) AddMemberToGroup(ctx context.Context, req *AddMemberReq) error {
@@ -28,7 +28,7 @@ func (s *service) AddMemberToGroup(ctx context.Context, req *AddMemberReq) error
 	defer cancel()
 
 	//  check group exits (by id)
-	group, err := s.Repositroy.GetGroupByID(ctx, req.GroupID)
+	group, err := s.Repository.GetGroupByID(ctx, req.GroupID)
 	if err != nil {
 		return errors.New("group with id doesn't exist")
 	}
@@ -39,7 +39,7 @@ func (s *service) AddMemberToGroup(ctx context.Context, req *AddMemberReq) error
 	}
 
 	// only 20 people per group
-	members, err := s.Repositroy.GetMemberByGroupID(ctx, group.ID)
+	members, err := s.Repository.GetMemberByGroupID(ctx, group.ID)
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (s *service) AddMemberToGroup(ctx context.Context, req *AddMemberReq) error
 		return errors.New("only 20 people can add in the group")
 	}
 
-	return s.Repositroy.AddMemberToGroup(ctx, req.GroupID, req.Members)
+	return s.Repository.AddMemberToGroup(ctx, req.GroupID, req.Members)
 }
 
 func (s *service) GetAllGroupByUserID(ctx context.Context, userId int64) (*[]Group, error) {
@@ -55,13 +55,13 @@ func (s *service) GetAllGroupByUserID(ctx context.Context, userId int64) (*[]Gro
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	groupIds, err := s.Repositroy.GetAllGroupByUserID(ctx, userId)
+	groupIds, err := s.Repository.GetAllGroupByUserID(ctx, userId)
 	if err != nil {
 		return nil, nil
 	}
 
 	for _, id := range groupIds {
-		group, err := s.Repositroy.GetGroupByID(ctx, id)
+		group, err := s.Repository.GetGroupByID(ctx, id)
 		if err != nil {
 			log.Printf("error while getting group info %d", id)
 		}
@@ -75,14 +75,14 @@ func (s *service) RemoveMemberFromGroup(ctx context.Context, groupId, userId int
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	return s.Repositroy.RemoveMemberFromGroup(ctx, groupId, userId)
+	return s.Repository.RemoveMemberFromGroup(ctx, groupId, userId)
 }
 
 func (s *service) GetGroupDetailsByID(ctx context.Context, groupID int64) (*Group, error) {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	return s.Repositroy.GetGroupByID(ctx, groupID)
+	return s.Repository.GetGroupByID(ctx, groupID)
 }
 
 func (s *service) UpdateGroupDetails(ctx context.Context, req UpdateGroup) (*Group, error) {
@@ -97,7 +97,7 @@ func (s *service) UpdateGroupDetails(ctx context.Context, req UpdateGroup) (*Gro
 		Image:   req.Image,
 	}
 
-	group, err := s.Repositroy.UpdateGroupDetails(ctx, g)
+	group, err := s.Repository.UpdateGroupDetails(ctx, g)
 	if err != nil {
 		return nil, err
 	}
@@ -109,5 +109,5 @@ func (s *service) DeleteGroupByID(ctx context.Context, groupID int64) error {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
-	return s.Repositroy.DeleteGroupByID(ctx, groupID)
+	return s.Repository.DeleteGroupByID(ctx, groupID)
 }

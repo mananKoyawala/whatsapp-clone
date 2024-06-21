@@ -47,7 +47,7 @@ func (r *repository) PullAllMessages(ctx context.Context, req *GetAllMessageReq)
 	messages := []Message{}
 	for rows.Next() {
 		var msg Message
-		if err := rows.Scan(&msg.ID, &msg.SenderID, &msg.ReceiverID, &msg.MessageType, &msg.MessageText, &msg.MediaUrl, &msg.Created_at, &msg.Updated_at, &msg.IsRead); err != nil {
+		if err := rows.Scan(&msg.ID, &msg.SenderID, &msg.ReceiverID, &msg.MessageType, &msg.MessageText, &msg.MediaUrl, &msg.Created_at, &msg.Updated_at, &msg.IsRead, &msg.GroupID, &msg.IsGroupMessage); err != nil {
 			return nil, err
 		}
 		messages = append(messages, msg)
@@ -102,4 +102,34 @@ func (r *repository) IsMsgExist(ctx context.Context, msg *MessageReq) error {
 	}
 
 	return nil
+}
+
+func (r *repository) PullAllGroupMessages(ctx context.Context, req *GetAllGroupMessageReq) (*[]Message, error) {
+
+	query := `
+	SELECT * 
+	FROM messages 
+	WHERE group_id=$1 
+	AND created_at BETWEEN $2 AND $3
+	ORDER BY created_at`
+	// OR (sender_id != $1 AND sender_id != $2) it acts as a filter so it is not going to find the messages like 1-1
+	rows, err := r.db.QueryContext(ctx, query, req.GroupID, req.FromDate, req.ToDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	messages := []Message{}
+	for rows.Next() {
+		var msg Message
+		if err := rows.Scan(&msg.ID, &msg.SenderID, &msg.ReceiverID, &msg.MessageType, &msg.MessageText, &msg.MediaUrl, &msg.Created_at, &msg.Updated_at, &msg.IsRead, &msg.GroupID, &msg.IsGroupMessage); err != nil {
+			return nil, err
+		}
+		messages = append(messages, msg)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &messages, nil
 }

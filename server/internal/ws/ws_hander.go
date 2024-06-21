@@ -24,10 +24,10 @@ var upgrader = websocket.Upgrader{
 type Handler struct {
 	hub *Hub
 	mr  msg.Repository
-	gr  group.Repositroy
+	gr  group.Repository
 }
 
-func NewWsHandler(h *Hub, mr msg.Repository, gr group.Repositroy) *Handler {
+func NewWsHandler(h *Hub, mr msg.Repository, gr group.Repository) *Handler {
 	return &Handler{
 		hub: h,
 		mr:  mr,

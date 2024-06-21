@@ -25,7 +25,7 @@ type Client struct {
 	GroupID      int64 `json:"group_id"`
 }
 
-func (c *Client) readMessage(hub *Hub, mr msg.Repository, gr group.Repositroy) {
+func (c *Client) readMessage(hub *Hub, mr msg.Repository, gr group.Repository) {
 	defer func() {
 		hub.Unregister <- c
 		c.conn.Close()
@@ -90,7 +90,7 @@ func sendOneOneMessage(nmsg msg.Message, newMessage *msg.Message, c *Client, hub
 	}
 }
 
-func sendGroupMessage(newMessage *msg.Message, hub *Hub, mr msg.Repository, gr group.Repositroy) {
+func sendGroupMessage(newMessage *msg.Message, hub *Hub, mr msg.Repository, gr group.Repository) {
 	_, err := gr.GetGroupByID(context.Background(), newMessage.GroupID)
 	if err == nil {
 		newMessage.ReceiverID = newMessage.SenderID // only groups chat has receiver id = senderid

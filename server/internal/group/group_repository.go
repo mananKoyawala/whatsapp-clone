@@ -13,7 +13,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func NewGroupRepository(db *sql.DB) Repositroy {
+func NewGroupRepository(db *sql.DB) Repository {
 	return &repository{db: db}
 }
 

@@ -49,6 +49,12 @@ type GetAllMessageReq struct {
 	ToDate     string `json:"to_date"`
 }
 
+type GetAllGroupMessageReq struct {
+	GroupID  int64  `json:"group_id"`
+	FromDate string `json:"from_date"`
+	ToDate   string `json:"to_date"`
+}
+
 type MessageReq struct {
 	ID         int64 `json:"id"`
 	SenderID   int64 `json:"sender_id"`
@@ -75,6 +81,7 @@ func NewMessage(msg *Message) *Message {
 type Repository interface {
 	AddMessage(ctx context.Context, msg Message) (*Message, error)
 	PullAllMessages(ctx context.Context, req *GetAllMessageReq) (*[]Message, error)
+	PullAllGroupMessages(ctx context.Context, req *GetAllGroupMessageReq) (*[]Message, error)
 	UpdateIsReadMessage(ctx context.Context, req *MessageReq) error
 	DeleteMessage(ctx context.Context, msg *MessageReq) error
 	IsMsgExist(ctx context.Context, msg *MessageReq) error
@@ -83,6 +90,7 @@ type Repository interface {
 type Service interface {
 	AddMessage(ctx context.Context, msg *CreateMesReq) (*CreateMesRes, error)
 	PullAllMessages(ctx context.Context, req *GetAllMessageReq) (*[]Message, error)
+	PullAllGroupMessages(ctx context.Context, req *GetAllGroupMessageReq) (*[]Message, error)
 	UpdateIsReadMessage(ctx context.Context, req *[]MessageReq) error
 	DeleteMessage(ctx context.Context, msg *MessageReq) error
 }

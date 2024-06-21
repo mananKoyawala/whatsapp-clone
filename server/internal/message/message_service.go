@@ -6,17 +6,19 @@ import (
 	"time"
 
 	helper "github.com/mananKoyawala/whatsapp-clone/helpers"
+	"github.com/mananKoyawala/whatsapp-clone/internal/group"
 	"github.com/mananKoyawala/whatsapp-clone/internal/user"
 )
 
 type service struct {
 	Repository
-	userRepo user.Repository
-	timeout  time.Duration
+	userRepo  user.Repository
+	groupRepo group.Repository
+	timeout   time.Duration
 }
 
-func NewMsgService(r Repository, userRepo user.Repository) Service {
-	return &service{Repository: r, userRepo: userRepo, timeout: time.Duration(100) * time.Second}
+func NewMsgService(r Repository, userRepo user.Repository, groupRepo group.Repository) Service {
+	return &service{Repository: r, userRepo: userRepo, groupRepo: groupRepo, timeout: time.Duration(100) * time.Second}
 }
 
 func (s *service) AddMessage(ctx context.Context, msg *CreateMesReq) (*CreateMesRes, error) {
@@ -124,4 +126,32 @@ func (s *service) DeleteMessage(ctx context.Context, msg *MessageReq) error {
 	}
 
 	return nil
+}
+
+func (s *service) PullAllGroupMessages(ctx context.Context, req *GetAllGroupMessageReq) (*[]Message, error) {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	// check gorup exists or not
+	_, err := s.groupRepo.GetGroupByID(ctx, req.GroupID)
+	if err != nil {
+		return nil, errors.New("group does not exist")
+	}
+
+	if req.FromDate == "" {
+		year, month, _ := time.Now().Date()
+		firstOfMonth := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+		req.FromDate = firstOfMonth.Format("01-02-2006")
+	}
+
+	if req.ToDate == "" {
+		req.ToDate = time.Now().Format("01-02-2006")
+	}
+
+	res, err := s.Repository.PullAllGroupMessages(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
