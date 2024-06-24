@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -97,8 +96,4 @@ type Service interface {
 	Login(ctx context.Context, req *UserLoginReq) (*UserLoginRes, error)
 	VerifyOTP(ctx context.Context, otp *OTPVerificationReq) (*OTPVerificationRes, error)
 	GetUserById(ctx context.Context, id int64) (*User, error)
-}
-
-func logs(i int) {
-	fmt.Println(i)
 }

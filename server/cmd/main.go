@@ -11,6 +11,7 @@ import (
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 	"github.com/mananKoyawala/whatsapp-clone/internal/user"
 	"github.com/mananKoyawala/whatsapp-clone/internal/ws"
+	logger "github.com/mananKoyawala/whatsapp-clone/logging"
 	"github.com/mananKoyawala/whatsapp-clone/router"
 	"github.com/mananKoyawala/whatsapp-clone/service/upload"
 )
@@ -33,10 +34,13 @@ func main() {
 
 	// log.Println("DB connected")
 
+	// initialize loggers
+	userLogger := logger.InitUserLogger()
+
 	// user
-	userRepository := user.NewUserRepository(db.GetDB())
-	userService := user.NewUserService(userRepository)
-	userHandler := user.NewUserHandler(userService)
+	userRepository := user.NewUserRepository(db.GetDB(), userLogger)
+	userService := user.NewUserService(userRepository, userLogger)
+	userHandler := user.NewUserHandler(userService, userLogger)
 
 	// group initialization
 	groupRepo := group.NewGroupRepository(db.GetDB())
@@ -47,7 +51,6 @@ func main() {
 	msgRepo := msg.NewMsgReposritory(db.GetDB())
 	msgSev := msg.NewMsgService(msgRepo, userRepository, groupRepo)
 	msgHand := msg.NewMsgHandler(msgSev)
-	
 
 	// ws initialization
 	hub := ws.NewHub()
