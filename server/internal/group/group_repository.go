@@ -4,17 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
+	"fmt"
+	"log/slog"
 
 	helper "github.com/mananKoyawala/whatsapp-clone/helpers"
 )
 
 type repository struct {
-	db *sql.DB
+	db     *sql.DB
+	logger *slog.Logger
 }
 
-func NewGroupRepository(db *sql.DB) Repository {
-	return &repository{db: db}
+func NewGroupRepository(db *sql.DB, logger *slog.Logger) Repository {
+	return &repository{db: db, logger: logger}
 }
 
 func (r *repository) CreateGroup(ctx context.Context, group *Group) (*Group, error) {
@@ -24,6 +26,7 @@ func (r *repository) CreateGroup(ctx context.Context, group *Group) (*Group, err
 
 	// creating group
 	if err := r.db.QueryRowContext(ctx, query1, group.AdminID, group.Name, group.About, group.Image, group.Created_at, group.Updated_at).Scan(&group.ID); err != nil {
+		r.logger.Error("failed to create group", slog.String("error", err.Error()))
 		return nil, err
 	}
 
@@ -36,11 +39,13 @@ func (r *repository) CreateGroup(ctx context.Context, group *Group) (*Group, err
 	// adding the members into the group
 	for _, member := range group.Members {
 		if err := r.db.QueryRowContext(ctx, query2, group.ID, member, current_time, current_time); err.Err() != nil {
-			log.Printf("error occured while adding member id %d", member)
+			msg := fmt.Sprintf("error occured while adding member id %d", member)
+			r.logger.Error(msg, slog.String("error", err.Err().Error()))
 			continue
 		}
 	}
 
+	r.logger.Info("group was created", slog.String("groupid", helper.Int64ToStirng(group.ID)))
 	return group, nil
 }
 
@@ -60,13 +65,15 @@ func (r *repository) AddMemberToGroup(ctx context.Context, groupid int64, member
 
 			if err := r.db.QueryRowContext(ctx, query, groupid, member, current_time, current_time); err.Err() != nil {
 
-				log.Printf("error occured while adding member id %d", member)
+				msg := fmt.Sprintf("error occured while adding member id %d", member)
+				r.logger.Error(msg, slog.String("error", err.Err().Error()))
 				return errors.New("error occured while adding member")
 			}
 		}
 
 	}
 
+	r.logger.Info("members was added into group")
 	return nil
 }
 
@@ -80,9 +87,12 @@ func (r *repository) GetGroupByID(ctx context.Context, groupId int64) (*Group, e
 
 	err := r.db.QueryRowContext(ctx, query, groupId).Scan(&group.ID, &group.AdminID, &group.Name, &group.About, &group.Image, &group.Created_at, &group.Updated_at)
 	if err != nil {
+		msg := fmt.Sprintf("failed to get group id %d", groupId)
+		r.logger.Error(msg, slog.String("error", err.Error()))
 		return nil, err
 	}
 
+	r.logger.Debug("got group", slog.String("groupid", helper.Int64ToStirng(groupId)))
 	return &group, nil
 }
 
@@ -100,18 +110,22 @@ func (r *repository) GetMemberByGroupID(ctx context.Context, groupId int64) ([]i
 
 	row, err := r.db.QueryContext(ctx, query, groupId)
 	if err != nil {
+		msg := fmt.Sprintf("failed to get members from group id %d", groupId)
+		r.logger.Error(msg, slog.String("error", err.Error()))
 		return members, err
 	}
 
 	for row.Next() {
 		var id ID
 		if err := row.Scan(&id.Id); err != nil {
-			log.Printf("error occurs while scanning id %d", id)
+			msg := fmt.Sprintf("error occurs while scanning id %d", id)
+			r.logger.Error(msg, slog.String("error", err.Error()))
 			continue
 		}
 		members = append(members, id.Id)
 	}
 
+	r.logger.Debug("got all members by group", slog.String("groupid", helper.Int64ToStirng(groupId)))
 	return members, nil
 }
 
@@ -123,9 +137,11 @@ func (r *repository) CheckUserAlreadyInTheGroup(ctx context.Context, GroupId, Us
 
 	err := r.db.QueryRowContext(ctx, query, GroupId, UserId).Scan(&id)
 	if err != nil || id <= 0 {
+		r.logger.Error("failed to check user already exist in the group", slog.String("error", err.Error()))
 		return true
 	}
 
+	r.logger.Info("user already in group", slog.String("groupid", helper.Int64ToStirng(GroupId)))
 	return false
 }
 
@@ -143,18 +159,21 @@ func (r *repository) GetAllGroupByUserID(ctx context.Context, userId int64) ([]i
 
 	row, err := r.db.QueryContext(ctx, query, userId)
 	if err != nil {
+		r.logger.Error("failed to get all group by user", slog.String("userid", helper.Int64ToStirng(userId)))
 		return groups, err
 	}
 
 	for row.Next() {
 		var id ID
 		if err := row.Scan(&id.Id); err != nil {
-			log.Printf("error occurs while scanning gid %d", id)
+			msg := fmt.Sprintf("error occurs while scanning gid %d", id)
+			r.logger.Error(msg, slog.String("error", err.Error()))
 			continue
 		}
 		groups = append(groups, id.Id)
 	}
-	// log.Println(groups)
+
+	r.logger.Debug("got all groups by user", slog.String("userid", helper.Int64ToStirng(userId)))
 	return groups, nil
 }
 
@@ -166,14 +185,18 @@ func (r *repository) RemoveMemberFromGroup(ctx context.Context, groupId, userId 
 	`
 
 	if ok := r.CheckUserAlreadyInTheGroup(ctx, groupId, userId); ok {
+		r.logger.Error("user doesn't belongs to the group")
 		return errors.New("user doesn't belongs to the group")
 	}
 
 	_, err := r.db.ExecContext(ctx, query, groupId, userId)
 	if err != nil {
+		msg := fmt.Sprintf("failed to remove member form groupid %d", groupId)
+		r.logger.Error(msg, slog.String("error", err.Error()))
 		return err
 	}
 
+	r.logger.Info("member was removed from group", slog.String("groupid", helper.Int64ToStirng(groupId)))
 	return nil
 }
 
@@ -188,9 +211,11 @@ func (r *repository) UpdateGroupDetails(ctx context.Context, group Group) (*Grou
 	`
 
 	if err := r.db.QueryRowContext(ctx, query, group.AdminID, group.Name, group.About, group.Image, group.Updated_at, group.ID); err.Err() != nil {
+		r.logger.Error("failed to updated group details", slog.String("error", err.Err().Error()))
 		return nil, err.Err()
 	}
 
+	r.logger.Info("group deatils updated successfully", slog.String("groupid", helper.Int64ToStirng(group.ID)))
 	return &group, nil
 }
 
@@ -200,6 +225,7 @@ func (r *repository) DeleteGroupByID(ctx context.Context, groupID int64) error {
 	// begin transaction
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
+		r.logger.Error("failed to initiate transactions", slog.String("error", err.Error()))
 		return err
 	}
 
@@ -211,8 +237,9 @@ func (r *repository) DeleteGroupByID(ctx context.Context, groupID int64) error {
 	_, err = r.GetGroupByID(ctx, groupID)
 	if err != nil {
 		tx.Rollback()
-		log.Println(err.Error())
-		return errors.New("group doesn't exist")
+		msg := fmt.Sprintf("group doesn't exists with id %d", groupID)
+		r.logger.Error(msg, slog.String("error", err.Error()))
+		return errors.New(msg)
 	}
 
 	//  delete first all the members related the group
@@ -225,7 +252,8 @@ func (r *repository) DeleteGroupByID(ctx context.Context, groupID int64) error {
 	_, err = r.db.ExecContext(ctx, queryDeleteAllMembers, groupID)
 	if err != nil {
 		tx.Rollback()
-		log.Println(err.Error())
+		msg := fmt.Sprintf("group doesn't exists with id %d", groupID)
+		r.logger.Error(msg, slog.String("error", err.Error()))
 		return err
 	}
 
@@ -233,18 +261,20 @@ func (r *repository) DeleteGroupByID(ctx context.Context, groupID int64) error {
 	_, err = r.db.ExecContext(ctx, query, groupID)
 	if err != nil {
 		tx.Rollback()
-		log.Println(err.Error())
+		msg := fmt.Sprintf("group doesn't exists with id %d", groupID)
+		r.logger.Error(msg, slog.String("error", err.Error()))
 		return err
 	}
 
 	// commit transaction
 	err = tx.Commit()
 	if err != nil {
-		log.Println(err)
+		r.logger.Error("failed to commit transactions", slog.String("error", err.Error()))
 	} else {
-		log.Println("....Transaction committed")
+		r.logger.Debug("transation commited")
 	}
 
+	r.logger.Info("group was deleted")
 	return nil
 }
 

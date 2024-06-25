@@ -24,10 +24,24 @@ func InitUserLogger() *slog.Logger {
 
 func InitMessageLogger() *slog.Logger {
 
-	// preparing users.log file
+	// preparing messages.log file
 	file, err := os.OpenFile(loggingPath+"messages.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0606)
 	if err != nil {
 		loggerInitError("messages", err)
+	}
+
+	// get user logger
+	loggerHandler := getLogger(file)
+
+	return slog.New(loggerHandler)
+}
+
+func InitGroupLogger() *slog.Logger {
+
+	// preparing groups.log file
+	file, err := os.OpenFile(loggingPath+"groups.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0606)
+	if err != nil {
+		loggerInitError("groups", err)
 	}
 
 	// get user logger
