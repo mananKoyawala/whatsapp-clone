@@ -42,7 +42,7 @@ func (h *Handler) CreateUser(c *gin.Context) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
-	h.logger.Info("user created successfully", slog.String("userid", strconv.Itoa(int(res.ID))))
+	h.logger.Info("user created successfully", slog.String("userid", helper.Int64ToStirng(res.ID)))
 	return api.WriteData(c, http.StatusOK, res)
 }
 

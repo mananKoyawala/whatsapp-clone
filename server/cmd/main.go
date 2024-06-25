@@ -36,6 +36,7 @@ func main() {
 
 	// initialize loggers
 	userLogger := logger.InitUserLogger()
+	messageLogger := logger.InitMessageLogger()
 
 	// user
 	userRepository := user.NewUserRepository(db.GetDB(), userLogger)
@@ -48,9 +49,9 @@ func main() {
 	groupHand := group.NewGroupHandler(groupSev)
 
 	// message
-	msgRepo := msg.NewMsgReposritory(db.GetDB())
-	msgSev := msg.NewMsgService(msgRepo, userRepository, groupRepo)
-	msgHand := msg.NewMsgHandler(msgSev)
+	msgRepo := msg.NewMsgReposritory(db.GetDB(), messageLogger)
+	msgSev := msg.NewMsgService(msgRepo, userRepository, groupRepo, messageLogger)
+	msgHand := msg.NewMsgHandler(msgSev, messageLogger)
 
 	// ws initialization
 	hub := ws.NewHub()
