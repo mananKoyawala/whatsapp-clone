@@ -39,6 +39,7 @@ func main() {
 	messageLogger := logger.InitMessageLogger()
 	groupLogger := logger.InitGroupLogger()
 	contactLogger := logger.InitContactLogger()
+	wsLogger := logger.InitWSLogger()
 
 	// user
 	userRepository := user.NewUserRepository(db.GetDB(), userLogger)
@@ -57,7 +58,7 @@ func main() {
 
 	// ws initialization
 	hub := ws.NewHub()
-	wsHandler := ws.NewWsHandler(hub, msgRepo, groupRepo)
+	wsHandler := ws.NewWsHandler(hub, msgRepo, groupRepo, wsLogger)
 
 	// file upload initialization
 	uploadSev := upload.NewAwsService(region, accessKey, secretKey, bucketName)

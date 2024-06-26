@@ -8,6 +8,7 @@ import (
 
 var loggingPath = "../logging/logs/"
 
+// User logger
 func InitUserLogger() *slog.Logger {
 
 	// preparing users.log file // rw----rw-
@@ -22,6 +23,7 @@ func InitUserLogger() *slog.Logger {
 	return slog.New(loggerHandler)
 }
 
+// Message logger
 func InitMessageLogger() *slog.Logger {
 
 	// preparing messages.log file
@@ -30,12 +32,13 @@ func InitMessageLogger() *slog.Logger {
 		loggerInitError("messages", err)
 	}
 
-	// get user logger
+	// get message logger
 	loggerHandler := getLogger(file)
 
 	return slog.New(loggerHandler)
 }
 
+// Group logger
 func InitGroupLogger() *slog.Logger {
 
 	// preparing groups.log file
@@ -44,12 +47,13 @@ func InitGroupLogger() *slog.Logger {
 		loggerInitError("groups", err)
 	}
 
-	// get user logger
+	// get group logger
 	loggerHandler := getLogger(file)
 
 	return slog.New(loggerHandler)
 }
 
+// Contact logger
 func InitContactLogger() *slog.Logger {
 
 	// preparing contacts.log file
@@ -58,7 +62,22 @@ func InitContactLogger() *slog.Logger {
 		loggerInitError("contacts", err)
 	}
 
-	// get user logger
+	// get contact logger
+	loggerHandler := getLogger(file)
+
+	return slog.New(loggerHandler)
+}
+
+// Web Sockets logger
+func InitWSLogger() *slog.Logger {
+
+	// preparing ws.log file
+	file, err := os.OpenFile(loggingPath+"ws.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0606)
+	if err != nil {
+		loggerInitError("ws", err)
+	}
+
+	// get ws logger
 	loggerHandler := getLogger(file)
 
 	return slog.New(loggerHandler)

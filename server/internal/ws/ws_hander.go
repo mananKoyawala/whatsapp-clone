@@ -1,12 +1,13 @@
 package ws
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	helper "github.com/mananKoyawala/whatsapp-clone/helpers"
 	"github.com/mananKoyawala/whatsapp-clone/internal/group"
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 )
@@ -22,16 +23,18 @@ var upgrader = websocket.Upgrader{
 }
 
 type Handler struct {
-	hub *Hub
-	mr  msg.Repository
-	gr  group.Repository
+	hub    *Hub
+	mr     msg.Repository
+	gr     group.Repository
+	logger *slog.Logger
 }
 
-func NewWsHandler(h *Hub, mr msg.Repository, gr group.Repository) *Handler {
+func NewWsHandler(h *Hub, mr msg.Repository, gr group.Repository, logger *slog.Logger) *Handler {
 	return &Handler{
-		hub: h,
-		mr:  mr,
-		gr:  gr,
+		hub:    h,
+		mr:     mr,
+		gr:     gr,
+		logger: logger,
 	}
 }
 
@@ -40,11 +43,10 @@ func (h *Handler) WsConnector(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("uid"))
 	userId := int64(id)
 
-	// TODO : check if the client exits in the system do it in the middleware
-
 	// check client already register with id
 	for client := range h.hub.clients {
 		if client.ID == userId {
+			h.logger.Error("user already connected")
 			c.JSON(http.StatusConflict, gin.H{
 				"error": "user already connected",
 			})
@@ -55,7 +57,7 @@ func (h *Handler) WsConnector(c *gin.Context) {
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Println(err.Error())
+		h.logger.Error("client upgration failed", slog.String("error", err.Error()))
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -69,8 +71,10 @@ func (h *Handler) WsConnector(c *gin.Context) {
 	}
 
 	// register client
+	h.logger.Debug("client registed", slog.String("clientid", helper.Int64ToStirng(userId)))
 	h.hub.Register <- client
 
-	go client.readMessage(h.hub, h.mr, h.gr)
-	go client.writeMessage()
+	// injecting logger
+	go client.readMessage(h.hub, h.mr, h.gr, h.logger)
+	go client.writeMessage(h.logger)
 }

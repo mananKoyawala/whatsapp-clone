@@ -3,10 +3,12 @@ package ws
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/gorilla/websocket"
+	helper "github.com/mananKoyawala/whatsapp-clone/helpers"
 	"github.com/mananKoyawala/whatsapp-clone/internal/group"
 	msg "github.com/mananKoyawala/whatsapp-clone/internal/message"
 )
@@ -25,14 +27,14 @@ type Client struct {
 	GroupID      int64 `json:"group_id"`
 }
 
-func (c *Client) readMessage(hub *Hub, mr msg.Repository, gr group.Repository) {
+func (c *Client) readMessage(hub *Hub, mr msg.Repository, gr group.Repository, logger *slog.Logger) {
 	defer func() {
 		hub.Unregister <- c
 		c.conn.Close()
 	}()
 
 	if err := c.conn.SetReadDeadline(time.Now().Add(pongwait)); err != nil {
-		log.Println(err)
+		logger.Error("read dead line exceed", slog.String("error", err.Error()))
 		return
 	}
 
@@ -45,7 +47,8 @@ func (c *Client) readMessage(hub *Hub, mr msg.Repository, gr group.Repository) {
 		if err != nil {
 			// means client closed the connection
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error :- %v", err)
+				msg := fmt.Sprintf("error :- %v", err)
+				logger.Debug(msg)
 			}
 			break
 		}
@@ -54,7 +57,7 @@ func (c *Client) readMessage(hub *Hub, mr msg.Repository, gr group.Repository) {
 
 		// unmarshal the message form the client
 		if err := json.Unmarshal(message, &nmsg); err != nil {
-			log.Println(err.Error())
+			logger.Error("failed to bind JSON", slog.String("error", err.Error()))
 			break
 		}
 
@@ -66,16 +69,16 @@ func (c *Client) readMessage(hub *Hub, mr msg.Repository, gr group.Repository) {
 		// check message is type of group
 		if newMessage.IsGroupMessage {
 			// group message
-			sendGroupMessage(newMessage, hub, mr, gr)
+			sendGroupMessage(newMessage, hub, mr, gr, logger)
 		} else {
 			// one-one message
-			sendOneOneMessage(*nmsg, newMessage, c, hub, mr)
+			sendOneOneMessage(*nmsg, newMessage, c, hub, mr, logger)
 		}
 
 	}
 }
 
-func sendOneOneMessage(nmsg msg.Message, newMessage *msg.Message, c *Client, hub *Hub, mr msg.Repository) {
+func sendOneOneMessage(nmsg msg.Message, newMessage *msg.Message, c *Client, hub *Hub, mr msg.Repository, logger *slog.Logger) {
 	newMessage.GroupID = 0 // it's make easy when we retrive the messages based on group id , it's prevent from getting other messages
 	resmessage, err := mr.AddMessage(context.Background(), *newMessage)
 	if err == nil {
@@ -86,11 +89,11 @@ func sendOneOneMessage(nmsg msg.Message, newMessage *msg.Message, c *Client, hub
 			hub.WriteMessages <- newMessage
 		}
 	} else {
-		log.Println(err.Error())
+		logger.Error("failed to sent message", slog.String("error", err.Error()))
 	}
 }
 
-func sendGroupMessage(newMessage *msg.Message, hub *Hub, mr msg.Repository, gr group.Repository) {
+func sendGroupMessage(newMessage *msg.Message, hub *Hub, mr msg.Repository, gr group.Repository, logger *slog.Logger) {
 	_, err := gr.GetGroupByID(context.Background(), newMessage.GroupID)
 	if err == nil {
 		newMessage.ReceiverID = newMessage.SenderID // only groups chat has receiver id = senderid
@@ -101,7 +104,7 @@ func sendGroupMessage(newMessage *msg.Message, hub *Hub, mr msg.Repository, gr g
 			// get all the group memebers
 			members, err := gr.GetMemberByGroupID(context.Background(), newMessage.GroupID)
 			if err != nil {
-				log.Printf("error occurs while getting the members of group %d", newMessage.GroupID)
+				logger.Error("error occurs while getting the members of group", slog.String("groupid", helper.Int64ToStirng(newMessage.GroupID)))
 			}
 			// var msg msg.GroupMessage
 			newMessage.Members = members
@@ -109,12 +112,12 @@ func sendGroupMessage(newMessage *msg.Message, hub *Hub, mr msg.Repository, gr g
 			// send message to group members
 			hub.WriteGroupMessages <- newMessage
 		} else {
-			log.Println(err.Error())
+			logger.Error("failed to sent message", slog.String("error", err.Error()))
 		}
 	}
 }
 
-func (c *Client) writeMessage() {
+func (c *Client) writeMessage(logger *slog.Logger) {
 	defer c.conn.Close()
 
 	ticker := time.NewTicker(pingInterval)
@@ -123,6 +126,7 @@ func (c *Client) writeMessage() {
 		select {
 		case msg, ok := <-c.Message:
 			if !ok {
+				logger.Error("failed to write message")
 				return
 			}
 			c.conn.WriteJSON(msg)
@@ -132,7 +136,7 @@ func (c *Client) writeMessage() {
 
 			// send a ping to the clinet
 			if err := c.conn.WriteMessage(websocket.PingMessage, []byte("")); err != nil {
-				log.Println("writemsg err :-", err.Error())
+				logger.Error("failed to write ping message", slog.String("error", err.Error()))
 				return
 			}
 		}
