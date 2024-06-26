@@ -38,6 +38,7 @@ func main() {
 	userLogger := logger.InitUserLogger()
 	messageLogger := logger.InitMessageLogger()
 	groupLogger := logger.InitGroupLogger()
+	contactLogger := logger.InitContactLogger()
 
 	// user
 	userRepository := user.NewUserRepository(db.GetDB(), userLogger)
@@ -64,9 +65,9 @@ func main() {
 	uploadHan := upload.NewAwsHandler(*uploadSev)
 
 	// contact initialization
-	conRepo := contact.NewContactRepo(db.GetDB())
-	conSev := contact.NewContactServ(conRepo, userRepository)
-	conHand := contact.NewContactHan(conSev)
+	conRepo := contact.NewContactRepo(db.GetDB(), contactLogger)
+	conSev := contact.NewContactServ(conRepo, userRepository, contactLogger)
+	conHand := contact.NewContactHan(conSev, contactLogger)
 
 	//run the hub
 	go hub.Run()

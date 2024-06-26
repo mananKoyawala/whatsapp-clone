@@ -4,17 +4,21 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 
+	helper "github.com/mananKoyawala/whatsapp-clone/helpers"
 	"github.com/mananKoyawala/whatsapp-clone/internal/user"
 )
 
 type repository struct {
-	db *sql.DB
+	db     *sql.DB
+	logger *slog.Logger
 }
 
-func NewContactRepo(db *sql.DB) Repository {
+func NewContactRepo(db *sql.DB, logger *slog.Logger) Repository {
 	return &repository{
-		db: db,
+		db:     db,
+		logger: logger,
 	}
 }
 
@@ -27,11 +31,15 @@ func (r *repository) AddContact(ctx context.Context, uid, cid int64) (*Contact, 
 	`
 
 	if err := r.db.QueryRowContext(ctx, query, uid, cid).Scan(&c.ID); err != nil {
+		r.logger.Error("failed to add contact", slog.String("error", err.Error()))
 		return nil, err
 	}
 
+	// get added ids
 	c.Uid = uid
 	c.Cid = cid
+
+	r.logger.Info("contact added", slog.String("contactid", helper.Int64ToStirng(c.Cid)))
 	return &c, nil
 }
 
@@ -43,6 +51,7 @@ func (r *repository) ContactAlreadyExist(ctx context.Context, uid, cid int64) bo
 	`
 
 	r.db.QueryRowContext(ctx, query, uid, cid).Scan(&id)
+
 	return id > 0
 }
 
@@ -56,6 +65,7 @@ func (r *repository) GetContacts(ctx context.Context, id int64) (*[]user.UserCon
 
 	row, err := r.db.QueryContext(ctx, query, id)
 	if err != nil {
+		r.logger.Error("failed to get contacts", slog.String("error", err.Error()))
 		return nil, err
 	}
 	defer row.Close()
@@ -64,11 +74,13 @@ func (r *repository) GetContacts(ctx context.Context, id int64) (*[]user.UserCon
 	for row.Next() {
 		var user user.UserContactsRes
 		if err := row.Scan(&user.ID, &user.Name, &user.Mobile, &user.About, &user.Image, &user.Last_Seen, &user.Is_Online); err != nil {
-			fmt.Println("Error scanning row:", err)
+			msg := fmt.Sprintln("Error scanning row:", err.Error())
+			r.logger.Error(msg)
 			continue
 		}
 		users = append(users, user)
 	}
 
+	r.logger.Debug("contacts were got", slog.String("userid", helper.Int64ToStirng(id)))
 	return &users, nil
 }

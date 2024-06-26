@@ -50,6 +50,20 @@ func InitGroupLogger() *slog.Logger {
 	return slog.New(loggerHandler)
 }
 
+func InitContactLogger() *slog.Logger {
+
+	// preparing contacts.log file
+	file, err := os.OpenFile(loggingPath+"contacts.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0606)
+	if err != nil {
+		loggerInitError("contacts", err)
+	}
+
+	// get user logger
+	loggerHandler := getLogger(file)
+
+	return slog.New(loggerHandler)
+}
+
 func loggerInitError(filename string, err error) {
 	slog.Error("Failed to open", filename, "  log file", slog.String("error", err.Error()))
 	os.Exit(1)
