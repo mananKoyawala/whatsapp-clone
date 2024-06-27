@@ -23,6 +23,10 @@ func main() {
 	secretKey := os.Getenv("AWS_SECRET_KEY")
 	bucketName := os.Getenv("AWS_BUCKET_NAME")
 
+	// get AES encryption secrect key and iv
+	encSecretKey := os.Getenv("ENC_SECRET_KEY")
+	encIv := os.Getenv("ENC_INITIALIZATION_VECTOR")
+
 	// database connection
 	db, err := db.NewDatabase()
 	if err != nil {
@@ -30,7 +34,7 @@ func main() {
 	}
 
 	// get Configuration
-	hub := config.Configuration(db.GetDB(), region, bucketName, accessKey, secretKey)
+	hub := config.Configuration(db.GetDB(), region, bucketName, accessKey, secretKey, encSecretKey, encIv)
 
 	//run the hub
 	go hub.Run()

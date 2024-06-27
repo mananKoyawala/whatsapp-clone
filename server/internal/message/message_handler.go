@@ -2,6 +2,7 @@ package msg
 
 import (
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 
@@ -169,6 +170,8 @@ func (h *Handler) PullAllGroupMessages(c *gin.Context) (int, error) {
 		h.logger.Error("failed to bind JSON", slog.String("error", err.Error()))
 		return http.StatusBadRequest, err
 	}
+
+	log.Println(req.GroupID)
 
 	// pull all messages
 	res, err := h.Service.PullAllGroupMessages(c.Request.Context(), &req)

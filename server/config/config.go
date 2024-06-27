@@ -10,16 +10,21 @@ import (
 	"github.com/mananKoyawala/whatsapp-clone/internal/ws"
 	logger "github.com/mananKoyawala/whatsapp-clone/logging"
 	"github.com/mananKoyawala/whatsapp-clone/router"
+	"github.com/mananKoyawala/whatsapp-clone/service/security"
 	"github.com/mananKoyawala/whatsapp-clone/service/upload"
 )
 
-func Configuration(db *sql.DB, region, bucketName, accessKey, secretKey string) *ws.Hub {
+func Configuration(db *sql.DB, region, bucketName, accessKey, secretKey, aesSecretKey, aesIv string) *ws.Hub {
+
 	// initialize loggers
 	userLogger := logger.InitUserLogger()
 	messageLogger := logger.InitMessageLogger()
 	groupLogger := logger.InitGroupLogger()
 	contactLogger := logger.InitContactLogger()
 	wsLogger := logger.InitWSLogger()
+
+	// initalize encryption service
+	aesEnc := security.NewEncyption(aesSecretKey, aesIv)
 
 	// user
 	userRepository := user.NewUserRepository(db, userLogger)
@@ -32,7 +37,7 @@ func Configuration(db *sql.DB, region, bucketName, accessKey, secretKey string) 
 	groupHand := group.NewGroupHandler(groupSev, groupLogger)
 
 	// message
-	msgRepo := msg.NewMsgReposritory(db, messageLogger)
+	msgRepo := msg.NewMsgReposritory(db, messageLogger, *aesEnc)
 	msgSev := msg.NewMsgService(msgRepo, userRepository, groupRepo, messageLogger)
 	msgHand := msg.NewMsgHandler(msgSev, messageLogger)
 

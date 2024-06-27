@@ -8,21 +8,33 @@ import (
 	"log/slog"
 
 	helper "github.com/mananKoyawala/whatsapp-clone/helpers"
+	"github.com/mananKoyawala/whatsapp-clone/service/security"
 )
 
 type repository struct {
-	db     *sql.DB
-	logger *slog.Logger
+	db         *sql.DB
+	logger     *slog.Logger
+	encryption security.Encryption
 }
 
-func NewMsgReposritory(db *sql.DB, logger *slog.Logger) Repository {
-	return &repository{db: db, logger: logger}
+func NewMsgReposritory(db *sql.DB, logger *slog.Logger, encryption security.Encryption) Repository {
+	return &repository{db: db, logger: logger, encryption: encryption}
 }
 
 func (r *repository) AddMessage(ctx context.Context, msg Message) (*Message, error) {
 	var msgID int64
 
 	query := "INSERT INTO messages (sender_id,receiver_id,group_id,is_group_msg,message_type,message_text,media_url,is_read,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id"
+
+	// adding encyption here
+	if msg.MessageType == "text" {
+		encryptedText, err := r.encryption.EncryptData(msg.MessageText)
+		if err != nil {
+			r.logger.Error("failed to encypt data", slog.String("error", err.Error()))
+			return nil, errors.New("failed to encypt data")
+		}
+		msg.MessageText = encryptedText
+	}
 
 	if err := r.db.QueryRowContext(ctx, query, msg.SenderID, msg.ReceiverID, msg.GroupID, msg.IsGroupMessage, msg.MessageType, msg.MessageText, msg.MediaUrl, msg.IsRead, msg.Created_at, msg.Updated_at).Scan(&msgID); err != nil {
 		r.logger.Error("failed to add message", slog.String("error", err.Error()))
@@ -43,6 +55,7 @@ func (r *repository) PullAllMessages(ctx context.Context, req *GetAllMessageReq)
 	OR (sender_id != $1 AND sender_id != $2)
 	AND created_at BETWEEN $3 AND $4
 	ORDER BY created_at`
+
 	// OR (sender_id != $1 AND sender_id != $2) it acts as a filter so it is not going to find the messages like 1-1
 	rows, err := r.db.QueryContext(ctx, query, req.SenderID, req.ReceiverID, req.FromDate, req.ToDate)
 	if err != nil {
@@ -58,6 +71,17 @@ func (r *repository) PullAllMessages(ctx context.Context, req *GetAllMessageReq)
 			r.logger.Error("failed to scan message", slog.String("error", err.Error()))
 			return nil, err
 		}
+
+		// decrypt messages
+		if msg.MessageType == "text" {
+			decrypedMsg, err := r.encryption.DecryptData(msg.MessageText)
+			if err != nil {
+				r.logger.Error("failed to decryptData", slog.String("error", err.Error()))
+				return nil, err
+			}
+			msg.MessageText = decrypedMsg
+		}
+
 		messages = append(messages, msg)
 	}
 	if err := rows.Err(); err != nil {
@@ -131,6 +155,7 @@ func (r *repository) PullAllGroupMessages(ctx context.Context, req *GetAllGroupM
 	AND created_at BETWEEN $2 AND $3
 	ORDER BY created_at`
 	// OR (sender_id != $1 AND sender_id != $2) it acts as a filter so it is not going to find the messages like 1-1
+
 	rows, err := r.db.QueryContext(ctx, query, req.GroupID, req.FromDate, req.ToDate)
 	if err != nil {
 		r.logger.Error("failed to pull all group messages", slog.String("error", err.Error()))
@@ -145,6 +170,17 @@ func (r *repository) PullAllGroupMessages(ctx context.Context, req *GetAllGroupM
 			r.logger.Error("failed to scan row message", slog.String("error", err.Error()))
 			return nil, err
 		}
+
+		// decrypt messages
+		if msg.MessageType == "text" {
+			decrypedMsg, err := r.encryption.DecryptData(msg.MessageText)
+			if err != nil {
+				r.logger.Error("failed to decryptData", slog.String("error", err.Error()))
+				return nil, err
+			}
+			msg.MessageText = decrypedMsg
+		}
+
 		messages = append(messages, msg)
 	}
 	if err := rows.Err(); err != nil {

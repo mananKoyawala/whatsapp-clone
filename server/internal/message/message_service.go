@@ -97,11 +97,11 @@ func (s *service) PullAllMessages(ctx context.Context, req *GetAllMessageReq) (*
 	if req.FromDate == "" {
 		year, month, _ := time.Now().Date()
 		firstOfMonth := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
-		req.FromDate = firstOfMonth.Format("01-02-2006")
+		req.FromDate = firstOfMonth.Format("01-02-2006 15:04:05")
 	}
 
 	if req.ToDate == "" {
-		req.ToDate = time.Now().Format("01-02-2006")
+		req.ToDate = time.Now().Format("01-02-2006 15:04:05")
 	}
 
 	res, err := s.Repository.PullAllMessages(ctx, req)
@@ -160,11 +160,11 @@ func (s *service) PullAllGroupMessages(ctx context.Context, req *GetAllGroupMess
 	if req.FromDate == "" {
 		year, month, _ := time.Now().Date()
 		firstOfMonth := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
-		req.FromDate = firstOfMonth.Format("01-02-2006")
+		req.FromDate = firstOfMonth.Format("01-02-2006 15:04:05")
 	}
 
 	if req.ToDate == "" {
-		req.ToDate = time.Now().Format("01-02-2006")
+		req.ToDate = time.Now().Format("01-02-2006 15:04:05")
 	}
 
 	res, err := s.Repository.PullAllGroupMessages(ctx, req)

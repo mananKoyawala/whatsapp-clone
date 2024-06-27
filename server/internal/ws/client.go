@@ -114,6 +114,8 @@ func sendGroupMessage(newMessage *msg.Message, hub *Hub, mr msg.Repository, gr g
 		} else {
 			logger.Error("failed to sent message", slog.String("error", err.Error()))
 		}
+	} else {
+		logger.Error("group doesn't exist", slog.String("error", err.Error()))
 	}
 }
 
