@@ -24,6 +24,7 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	r.POST("/users/signup", api.MakeHTTPHandleFunc(user.CreateUser))
 	r.POST("/users/login", api.MakeHTTPHandleFunc(user.LoginUser))
 	r.POST("/users/verify", api.MakeHTTPHandleFunc(user.VerifyUserOTP))
+	r.POST("/users/token", api.MakeHTTPHandleFunc(user.RefreshToken))
 
 	// middleware
 	r.Use(middleware.AuthMiddleware(user))

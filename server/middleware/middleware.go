@@ -28,6 +28,13 @@ func AuthMiddleware(userHandler *user.Handler) gin.HandlerFunc {
 			return
 		}
 
+		// check token is token or not
+		if claims.TokenType != "token" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": unauthorized})
+			c.Abort()
+			return
+		}
+
 		// check the user exits with the id
 		user, err := userHandler.Service.GetUserById(c.Request.Context(), claims.ID)
 		if err != nil {

@@ -79,6 +79,11 @@ type UserContactsRes struct {
 	Is_Online bool      `json:"is_online"`
 }
 
+type TokenGenRes struct {
+	ID    int64  `json:"id"`
+	Token string `json:"token"`
+}
+
 // deals with database
 type Repository interface {
 	CreateUser(ctx context.Context, user *User) (*User, error)
@@ -88,6 +93,7 @@ type Repository interface {
 	AddUserOTP(ctx context.Context, otp *UserOTP) error
 	VerifyOTP(ctx context.Context, otp *UserOTP) (int64, error)
 	UpdateTokens(ctx context.Context, token string, refresh_token string, updated_at time.Time, id int64) (int64, error)
+	UpdateToken(ctx context.Context, id int64, token string) (int64, error)
 }
 
 // act as bridge between repository and handlers
@@ -96,4 +102,5 @@ type Service interface {
 	Login(ctx context.Context, req *UserLoginReq) (*UserLoginRes, error)
 	VerifyOTP(ctx context.Context, otp *OTPVerificationReq) (*OTPVerificationRes, error)
 	GetUserById(ctx context.Context, id int64) (*User, error)
+	UpdateToken(ctx context.Context, id int64, token string) error
 }

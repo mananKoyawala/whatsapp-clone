@@ -171,3 +171,14 @@ func (s *service) GetUserById(ctx context.Context, id int64) (*User, error) {
 	s.logger.Info("user retrieved by id", slog.String("userid", helper.Int64ToStirng(res.ID)))
 	return res, err
 }
+
+func (s *service) UpdateToken(ctx context.Context, id int64, token string) error {
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	if _, err := s.Repository.UpdateToken(ctx, id, token); err != nil {
+		return err
+	}
+
+	return nil
+}

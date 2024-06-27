@@ -110,3 +110,16 @@ func (r *repository) UpdateTokens(ctx context.Context, token string, refresh_tok
 	r.logger.Info("tokens updated successfully", slog.String(userid, helper.Int64ToStirng(id)))
 	return mobile, nil
 }
+
+func (r *repository) UpdateToken(ctx context.Context, id int64, token string) (int64, error) {
+	var mobile int64
+	query := "UPDATE users SET token=$1, updated_at=$2 WHERE id=$3 RETURNING mobile"
+	updated_at, _ := helper.GetTime()
+	if err := r.db.QueryRowContext(ctx, query, token, updated_at, id).Scan(&mobile); err != nil {
+		r.logger.Error("failed to updated token", slog.String("error", err.Error()))
+		return 0, errors.New("can't update the tokens")
+	}
+
+	r.logger.Info("token updated successfully", slog.String(userid, helper.Int64ToStirng(id)))
+	return mobile, nil
+}

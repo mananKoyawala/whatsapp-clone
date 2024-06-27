@@ -21,22 +21,26 @@ func init() {
 }
 
 type SignedDetails struct {
-	ID int64
+	ID        int64
+	TokenType string
 	jwt.StandardClaims
 }
 
+// generates token and refresh_token
 func GenerateJwtToken(id int64) (string, string, error) {
 
 	// Create the Claims
 	claims := &SignedDetails{
-		ID: id,
+		ID:        id,
+		TokenType: "token",
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
 		},
 	}
 
 	refershClaims := &SignedDetails{
-		ID: id,
+		ID:        id,
+		TokenType: "refresh_token",
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(168)).Unix(),
 		},
@@ -54,6 +58,25 @@ func GenerateJwtToken(id int64) (string, string, error) {
 	}
 
 	return token, refreshToken, err
+}
+
+// generate only token
+func GenerateOnlyJwtToken(id int64) (string, error) {
+
+	// Create the Claims
+	claims := &SignedDetails{
+		ID:        id,
+		TokenType: "token",
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
+		},
+	}
+
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
+	if err != nil {
+		return "", err
+	}
+	return token, err
 }
 
 func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {

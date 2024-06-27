@@ -93,6 +93,60 @@ func (h *Handler) VerifyUserOTP(c *gin.Context) (int, error) {
 	return api.WriteData(c, http.StatusOK, res)
 }
 
+func (h *Handler) RefreshToken(c *gin.Context) (int, error) {
+	clientToken := c.Request.Header.Get("X-AUTH-TOKEN")
+
+	if clientToken == "" {
+		h.logger.Error("unauthorized access", slog.String("error", "token is missing"))
+		return http.StatusUnauthorized, api.Unauthorized
+	}
+
+	// validate token claims, expiry
+	claims, msg := helper.ValidateToken(clientToken)
+	if msg != "" {
+		h.logger.Error("unauthorized access", slog.String("error", "token is invalid"))
+		return http.StatusUnauthorized, api.Unauthorized
+	}
+
+	// check token is refresh_token or not
+	if claims.TokenType != "refresh_token" {
+		h.logger.Error("unauthorized access", slog.String("error", "token is not type of refresh_token"))
+		return http.StatusUnauthorized, api.Unauthorized
+	}
+
+	// check the user exits with the id
+	user, err := h.Service.GetUserById(c.Request.Context(), claims.ID)
+	if err != nil {
+		h.logger.Error("unauthorized access", slog.String("error", err.Error()))
+		return http.StatusUnauthorized, api.Unauthorized
+	}
+
+	if claims.ID != user.ID {
+		h.logger.Error("unauthorized access", slog.String("error", "claimid and userid are miss-matched"))
+		return http.StatusUnauthorized, api.Unauthorized
+	}
+
+	// generate new token
+	token, err := helper.GenerateOnlyJwtToken(user.ID)
+	if err != nil {
+		h.logger.Error("unauthorized access", slog.String("error", err.Error()))
+		return http.StatusInternalServerError, errors.New("error while generating token")
+	}
+
+	// update token
+	if err = h.Service.UpdateToken(c.Request.Context(), user.ID, token); err != nil {
+		h.logger.Error("unauthorized access", slog.String("error", err.Error()))
+		return http.StatusInternalServerError, errors.New("error while updating token")
+	}
+
+	// return token
+	res := &TokenGenRes{
+		ID:    user.ID,
+		Token: token,
+	}
+	return api.WriteData(c, http.StatusOK, res)
+}
+
 func validateCreateUser(req CreateUserReq) (string, bool) {
 	var str string
 
