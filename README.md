@@ -31,3 +31,7 @@
 1. Repository layer :- Deals with only database.
 2. Service layer :- Act as intermediate layer between Repository and Handler layer.
 3. Handler layer :- Handle the request that upcoming from client. I used _GIN_ for that.
+
+## License
+
+[MIT License](LICENSE)
