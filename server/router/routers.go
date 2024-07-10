@@ -40,8 +40,8 @@ func SetupRouters(user *user.Handler, wshandler *ws.Handler, msgHandler *msg.Han
 	r.DELETE("/msgs/group", api.MakeHTTPHandleFunc(msgHandler.DeleteGroupMessage))
 
 	// file routes
-	r.POST("/upload", api.MakeHTTPHandleFunc(uploadHandler.UploaFile))
-	r.DELETE("/delete", api.MakeHTTPHandleFunc(uploadHandler.DeleteFile))
+	r.POST("/file", api.MakeHTTPHandleFunc(uploadHandler.UploaFile))
+	r.DELETE("/file", api.MakeHTTPHandleFunc(uploadHandler.DeleteFile))
 
 	// contact routes
 	r.POST("/contacts", api.MakeHTTPHandleFunc(contact.AddContact))

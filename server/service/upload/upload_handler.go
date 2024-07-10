@@ -44,7 +44,7 @@ func (h *AwsHandler) UploaFile(c *gin.Context) (int, error) {
 		return api.WriteError(c, http.StatusInternalServerError, res)
 	}
 
-	return api.WriteData(c, http.StatusOK, "res")
+	return api.WriteData(c, http.StatusOK, res)
 }
 
 func (h *AwsHandler) DeleteFile(c *gin.Context) (int, error) {
