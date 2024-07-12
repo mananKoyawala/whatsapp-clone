@@ -33,6 +33,12 @@
 2. Service layer :- Act as intermediate layer between Repository and Handler layer.
 3. Handler layer :- Handle the request that upcoming from client. I used _GIN_ for that.
 
+## Documentation
+
+For more details, please read the [documentation](https://manankoyawala.github.io/whastapp-clone-doc).
+
+In the documentation, you will find a detailed overview of what was done in the project and the various components included.
+
 ## License
 
 [MIT License](LICENSE)
