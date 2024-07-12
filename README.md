@@ -10,7 +10,7 @@
 
 **3. Docker :** I used docker to get Postgres Database as service. So we don't need to install the postgres in our local system
 
-**4. Migration :** Golang migration is very useful when we need to add new table or even we have to add new column , remove or change something in column. It's make it very easy.
+**4. Database Migration :** Golang Database migration is very useful when we need to add new table or even we have to add new column , remove or change something in column. It's make it very easy.
 
 **5. AWS :** I used AWS s3 bucket to store all the files that are sharing this system to keep store at one secure place. As of now the system can store only .png, .jpg, .jepg files.
 
@@ -25,7 +25,7 @@
 
 ## Learnings
 
-- During developing this backend, I learned couple of tools like Docker, Migration, Logging, AWS (s3 bucket), Websocket, How to use Self-Signed certificate (HTTPs) and Data encryption using AES.
+- During developing this backend, I learned couple of tools like Docker, Database Migration, Logging, AWS (s3 bucket), Websocket, How to use Self-Signed certificate (HTTPs) and Data encryption using AES.
 - I used the Clean-code architecture, means every things are divied into layer
 - There are three layers
 
