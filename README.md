@@ -25,8 +25,9 @@
 
 ## Learnings
 
-- During developing this backend, I learned couple of tools like Docker, Migration, Logging, AWS (s3 bucket), Websocket, How to use Self-Signed certificate and Encryption using AES.
-- I used the Clean-code architecture, means every things are divied into three layer
+- During developing this backend, I learned couple of tools like Docker, Migration, Logging, AWS (s3 bucket), Websocket, How to use Self-Signed certificate (HTTPs) and Data encryption using AES.
+- I used the Clean-code architecture, means every things are divied into layer
+- There are three layers
 
 1. Repository layer :- Deals with only database.
 2. Service layer :- Act as intermediate layer between Repository and Handler layer.
